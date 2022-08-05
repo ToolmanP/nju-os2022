@@ -3,6 +3,12 @@
 #include <assert.h>
 #include <getopt.h>
 
+#define panic(format, ...) \
+  do { \
+    Log("\33[1;31m: " format, ## __VA_ARGS__); \
+    exit(1); \
+  } while (0)
+
 const struct option table[]={
   {"show-pids",no_argument,NULL,'p'},
   {"numeric-sort",no_argument,NULL,'n'},
@@ -11,6 +17,10 @@ const struct option table[]={
 
 static inline void print_version(){
   printf("PTree by ToolmanP v114514\n");
+}
+
+static inline void pstree(int numeric,int showpid){
+  panic("Not implemented.");
 }
 
 int main(int argc, char *argv[]) {
@@ -31,6 +41,8 @@ int main(int argc, char *argv[]) {
         assert(0);
     }
   }
-  assert(!argv[argc]);
+  pstree(numeric,showpid);
+  // assert(!argv[argc]);
+  
   return 0;
 }
