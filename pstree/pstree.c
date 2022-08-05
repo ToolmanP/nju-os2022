@@ -3,11 +3,6 @@
 #include <assert.h>
 #include <getopt.h>
 
-#define panic(format, ...) \
-  do { \
-    Log("\33[1;31m: " format, ## __VA_ARGS__); \
-    exit(1); \
-  } while (0)
 
 const struct option table[]={
   {"show-pids",no_argument,NULL,'p'},
@@ -20,7 +15,8 @@ static inline void print_version(){
 }
 
 static inline void pstree(int numeric,int showpid){
-  panic("Not implemented.");
+  printf("Not implemented.\n");
+  assert(0);
 }
 
 int main(int argc, char *argv[]) {
