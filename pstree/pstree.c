@@ -15,6 +15,7 @@ static inline void print_version(){
 }
 
 static inline void pstree(int numeric,int showpid){
+  printf("%d %d\n",numeric,showpid);
   printf("Not implemented.\n");
   assert(0);
 }
