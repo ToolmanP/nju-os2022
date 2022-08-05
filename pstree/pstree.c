@@ -1,10 +1,34 @@
 #include <stdio.h>
 #include <assert.h>
+#include <getopt.h>
+
+const struct option table[]={
+  {"show-pids",no_argument,NULL,'p'},
+  {"numeric-sort",no_argument,NULL,'n'},
+  {"version",no_argument,NULL,'V'}
+};
+
+static inline void print_version(){
+  printf("PTree by ToolmanP v114514\n");
+}
 
 int main(int argc, char *argv[]) {
-  for (int i = 0; i < argc; i++) {
-    assert(argv[i]);
-    printf("argv[%d] = %s\n", i, argv[i]);
+  int o;
+  int numeric = 0, showpid = 0;
+  while((o = getopt_long(argc,argv,"pnV",table,NULL))!=-1){
+    switch(o){
+      case 'n':
+        numeric = 1;
+        break;
+      case 'p':
+        showpid = 1;
+        break;
+      case 'V':
+        print_version();
+        exit(0);
+      default:
+        assert(0);
+    }
   }
   assert(!argv[argc]);
   return 0;
