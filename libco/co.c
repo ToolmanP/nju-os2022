@@ -78,7 +78,7 @@ static inline void __co_resume(co_t *co){
   }else{
     longjmp(co->context,0);
   }
-  longjmp(co_prev,2);
+  longjmp(co_prev->context,2);
 }
 
 static inline __col_t *__co_list_alloc(co_t *co){
