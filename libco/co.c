@@ -44,6 +44,7 @@ co_t __co_boot = {
 };
 
 co_t *co_current = &__co_boot;
+co_t *co_prev = NULL;
 
 __col_t *co_head,*co_tail;
 
@@ -69,6 +70,7 @@ static inline void __co_free(co_t *co){
 
 static inline void __co_resume(co_t *co){
   assert(co->status != CO_DEAD);
+  co_prev = co_current;
   co_current = co;
   if(co->status == CO_NEW){
     co->status = CO_RUNNING;
@@ -76,6 +78,7 @@ static inline void __co_resume(co_t *co){
   }else{
     longjmp(co->context,0);
   }
+  longjmp(co_prev,2);
 }
 
 static inline __col_t *__co_list_alloc(co_t *co){
@@ -118,7 +121,6 @@ static inline co_t *__co_list_fetch(){
 __attribute__((constructor)) static inline void __co_init(){
   co_head = __co_list_alloc(co_current);
   co_tail = co_head;
-  debug("constructor\n");
 }
 
 struct co *co_start(const char *name, void (*func)(void *), void *arg) {
@@ -150,6 +152,7 @@ void co_yield() {
   int val = setjmp(co_current->context);
   if(val==0){
     __co_resume(co);
+  }else if(val==2){
     co->status = CO_DEAD;
   }else{
 
