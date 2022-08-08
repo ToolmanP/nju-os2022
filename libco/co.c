@@ -71,7 +71,7 @@ static inline void __co_resume(co_t *co){
   co_current = co;
   if(co->status == CO_NEW){
     co->status = CO_RUNNING;
-    stack_switch_call(co->stack+STACK_SIZE-1,co->func,(uintptr_t)co->arg);
+    stack_switch_call(co->stack+STACK_SIZE,co->func,(uintptr_t)co->arg);
   }else{
     longjmp(co->context,0);
   }
