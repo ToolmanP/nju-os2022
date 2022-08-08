@@ -25,13 +25,13 @@ typedef struct co {
 
   const char *name;
   void (*func)(void *);
-  void *arg;
+  void *arg; 
 
   enum co_status status;
   struct co *waiter;
   jmp_buf context;
-  uint8_t stack[STACK_SIZE] __attribute__((aligned(16)));
-} co_t;
+  uint8_t stack[STACK_SIZE]
+} __attribute__((aligned(16))) co_t;
 
 typedef struct __col{
   co_t *co;
