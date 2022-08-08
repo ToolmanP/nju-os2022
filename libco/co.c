@@ -68,7 +68,7 @@ static inline void __co_free(co_t *co){
 }
 
 static inline void __co_resume(co_t *co){
-  assert(co->status == CO_NEW || co->status == CO_RUNNING);
+  assert(co->status != CO_DEAD);
   co_current = co;
   if(co->status == CO_NEW){
     co->status = CO_RUNNING;
