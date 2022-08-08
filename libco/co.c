@@ -115,7 +115,7 @@ static inline co_t *__co_list_fetch(){
   return NULL;
 }
 
-static inline void __co_init() __attribute__((constructor)){
+__attribute__((constructor)) static inline void __co_init(){
   co_head = __co_list_alloc(co_current);
   co_tail = co_head;
 }
