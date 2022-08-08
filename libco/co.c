@@ -30,7 +30,7 @@ typedef struct co  {
   enum co_status status;
   struct co *waiter;
   jmp_buf context;
-  uint8_t stack[STACK_SIZE]
+  uint8_t stack[STACK_SIZE];
 } co_t __attribute__((aligned(16)));
 
 typedef struct __col{
