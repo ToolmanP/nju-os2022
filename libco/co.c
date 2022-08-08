@@ -139,7 +139,7 @@ void co_wait(struct co *co) {
     co_yield();
   
   __co_list_delete(co);
-
+  
 }
 
 void co_yield() {
