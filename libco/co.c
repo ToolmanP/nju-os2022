@@ -153,6 +153,7 @@ void co_yield() {
   if(val==0){
     __co_resume(co);
   }else if(val==2){
+    assert(co);
     co->status = CO_DEAD;
   }else{
 
