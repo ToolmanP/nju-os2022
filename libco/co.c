@@ -78,6 +78,8 @@ static inline void __co_resume(co_t *co){
   }else{
     longjmp(co->context,0);
   }
+  co_current = co_prev;
+  assert(co_current != NULL);
   longjmp(co_prev->context,2);
 }
 
@@ -150,12 +152,17 @@ void co_wait(struct co *co) {
 void co_yield() {
   co_t *co = __co_list_fetch();
   int val = setjmp(co_current->context);
-  if(val==0){
-    __co_resume(co);
-  }else if(val==2){
-    assert(co);
-    co->status = CO_DEAD;
-  }else{
+  switch(val){
+    case 0:
+      __co_resume(co);
+      break;
+    case 1:
+      break;
+    case 2:
+      co->status = CO_DEAD;
+      break;
+    default:
+      assert(0); // never reach here
+  };
 
-  }
 }
