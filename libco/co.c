@@ -71,7 +71,7 @@ static inline void __co_free(co_t *co){
 static inline void __co_resume(co_t *co){
   assert(co->status == CO_NEW || co->status == CO_RUNNING);
   co_current = co;
-  if(co->status = CO_NEW){
+  if(co->status == CO_NEW){
     co->status = CO_RUNNING;
     stack_switch_call(co->stack+STACK_SIZE-1,co->func,(uintptr_t)co->arg);
   }else{
