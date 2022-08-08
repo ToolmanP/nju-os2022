@@ -50,10 +50,10 @@ __col_t *co_head,*co_tail;
 static inline void stack_switch_call(void *sp,void *entry,uintptr_t arg){
   asm volatile (
     #if __x86_64__
-        "movq %0, %%rsp; movq %2, %%rdi; jmp *%1"
+        "movq %0, %%rsp; movq %2, %%rdi; call *%1"
           : : "b"((uintptr_t)sp), "d"(entry), "a"(arg) : "memory"
     #else
-        "movl %0, %%esp; movl %2, 4(%0); jmp *%1"
+        "movl %0, %%esp; movl %2, 4(%0); call *%1"
           : : "b"((uintptr_t)sp - 8), "d"(entry), "a"(arg) : "memory"
     #endif
   );
@@ -72,7 +72,7 @@ static inline void __co_resume(co_t *co){
   co_current = co;
   if(co->status == CO_NEW){
     co->status = CO_RUNNING;
-    stack_switch_call(co->stack+STACK_SIZE-8,co->func,(uintptr_t)co->arg);
+    stack_switch_call(co->stack+STACK_SIZE,co->func,(uintptr_t)co->arg);
   }else{
     longjmp(co->context,0);
   }
