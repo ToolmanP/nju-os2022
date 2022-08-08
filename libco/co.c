@@ -8,7 +8,7 @@
 #define STACK_SIZE 1024*64
 
 #ifdef LOCAL_MACHINE
-  #define debug(...) printf(__FILE__,__LINE__,__VA_ARGS__)
+  #define debug(...) printf(__VA_ARGS__)
 #else
   #define debug()
 #endif
@@ -25,7 +25,7 @@ typedef struct co {
   const char *name;
   void (*func)(void *);
   void *arg;
-  
+
   enum co_status status;
   struct co *waiter;
   jmp_buf context;
@@ -115,6 +115,7 @@ static inline co_t *__co_list_fetch(){
 __attribute__((constructor)) static inline void __co_init(){
   co_head = __co_list_alloc(co_current);
   co_tail = co_head;
+  debug("constructor\n");
 }
 
 struct co *co_start(const char *name, void (*func)(void *), void *arg) {
