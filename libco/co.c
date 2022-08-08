@@ -21,7 +21,7 @@ enum co_status{
   CO_DEAD
 };
 
-typedef struct co {
+typedef struct co __attribute__((aligned(16))) {
 
   const char *name;
   void (*func)(void *);
@@ -31,7 +31,7 @@ typedef struct co {
   struct co *waiter;
   jmp_buf context;
   uint8_t stack[STACK_SIZE]
-} __attribute__((aligned(16))) co_t;
+}  co_t;
 
 typedef struct __col{
   co_t *co;
