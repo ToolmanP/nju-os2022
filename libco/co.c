@@ -13,6 +13,7 @@
   #define debug()
 #endif
 
+
 enum co_status{
   CO_NEW = 1,
   CO_RUNNING,
@@ -29,7 +30,7 @@ typedef struct co {
   enum co_status status;
   struct co *waiter;
   jmp_buf context;
-  uint8_t stack[STACK_SIZE];  
+  uint8_t stack[STACK_SIZE]; __attribute__((aligned(16)))
 } co_t;
 
 typedef struct __col{
