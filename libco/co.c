@@ -25,10 +25,7 @@ typedef struct co {
   const char *name;
   void (*func)(void *);
   void *arg;
-
-  void (*func)(void *);
-  void *arg;
-
+  
   enum co_status status;
   struct co *waiter;
   jmp_buf context;
