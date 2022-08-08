@@ -4,6 +4,9 @@
 #include <string.h>
 #include "co-test.h"
 
+#define ENABLE_TEST1 1
+#define ENABLE_TEST2 0
+
 int g_count = 0;
 
 static void add_count() {
@@ -120,11 +123,15 @@ static void test_2() {
 int main() {
     setbuf(stdout, NULL);
 
+#if ENABLE_TEST1
     printf("Test #1. Expect: (X|Y){0, 1, 2, ..., 199}\n");
     test_1();
+#endif
 
+#if ENABLE_TEST2
     printf("\n\nTest #2. Expect: (libco-){200, 201, 202, ..., 399}\n");
     test_2();
+#endif
 
     printf("\n\n");
 
