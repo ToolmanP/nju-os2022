@@ -64,10 +64,10 @@ static __col_t *co_head;
 static inline void stack_switch_call(void *sp,void *entry,uintptr_t arg){
   asm volatile (
     #if __x86_64__
-        "movq %0, %%rsp; movq %2, %%rdi; jmp *%1"
+        "movq %0, %%rsp; movq %2, %%rdi; call *%1"
           : : "b"((uintptr_t)sp), "d"(entry), "a"(arg) : "memory"
     #else
-        "movl %0, %%esp; movl %2, 4(%0); jmp *%1"
+        "movl %0, %%esp; movl %2, 4(%0); movl %%eip, (%0); jmp *%1"
           : : "b"((uintptr_t)sp - 8), "d"(entry), "a"(arg) : "memory"
     #endif
   );
