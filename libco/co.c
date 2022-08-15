@@ -57,9 +57,9 @@ static co_t __co_boot = {
   .yield_cnt = 0
 };
 
-static volatile co_t *co_current = &__co_boot;
+static co_t *co_current = &__co_boot;
 
-static volatile __col_t *co_head;
+static __col_t *co_head;
 
 static inline void stack_switch_call(void *sp,void *entry,uintptr_t arg){
   asm volatile (
