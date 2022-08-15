@@ -1,9 +1,10 @@
-#include "co.h"
 #include <stdlib.h>
 #include <stdint.h>
 #include <setjmp.h>
 #include <malloc.h>
 #include <assert.h>
+
+#include "co.h"
 
 #define STACK_SIZE 1024*64
 
