@@ -111,7 +111,6 @@ static inline void __co_list_delete(co_t *co){
 static inline co_t *__co_list_fetch(){
   uint32_t minn = 0xFFFFFFFF;
   co_t *ret = NULL;
-
   for(__col_t *entry = co_head;entry;entry = entry->next){
     if(entry->co != co_current && entry->co->status != CO_DEAD){
         if(entry->co->yield_cnt < minn){
