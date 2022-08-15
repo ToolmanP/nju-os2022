@@ -153,7 +153,7 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
   co->status = CO_NEW;
   co->yield_cnt = 0;
 
-  __co_list_append(co);
+  __co_list_insert(co);
   return co;
 }
 
