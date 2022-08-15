@@ -137,7 +137,9 @@ static inline void __co_resume(co_t *co){
   }else{
     longjmp(co->context,0);
   }
-
+  
+  volatile co_t *current;
+  asm volatile("mov %1,%0 ":"=r"(current):"r"(co_current):"memory");
   co_current->status = CO_DEAD;
   co_yield(); // context switch
 }
