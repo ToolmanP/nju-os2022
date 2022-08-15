@@ -146,6 +146,7 @@ static inline void __co_resume(co_t *co){
 
   assert(co->status != CO_DEAD);
   __co_callstack_push(co_current);
+  
   debug("%s -> %s\n",co_current->name,co->name);
 
   co_current = co;
@@ -160,7 +161,9 @@ static inline void __co_resume(co_t *co){
   co_prev = __co_callstack_pop();
 
   co_current = co_prev;
+
   debug("%s -> %s\n",co_current->name,co_prev->name);
+
   assert(co_prev!=NULL);
   longjmp(co_prev->context,2);
 }
