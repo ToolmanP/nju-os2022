@@ -57,10 +57,8 @@ static co_t __co_boot = {
 };
 
 static co_t *co_current = &__co_boot;
-static co_t *co_prev;
 
 static __col_t *co_head,*co_tail;
-static __col_t *co_stack;
 
 static inline void stack_switch_call(void *sp,void *entry,uintptr_t arg){
   asm volatile (
@@ -95,22 +93,6 @@ static inline void __co_list_append(co_t *co){
   co_tail = co_tail->next;
 }
 
-static inline void __co_callstack_push(co_t *co){
-  __col_t *entry = __co_list_alloc(co);
-  entry->next = co_stack;
-  entry->co = co;
-  co_stack = entry;
-}
-
-static inline co_t *__co_callstack_pop(){
-  assert(co_stack != NULL);
-  __col_t **curr = &co_stack;
-  __col_t *entry = *curr;
-  *curr = entry->next;
-  return entry->co;
-}
-
-
 static inline void __co_list_delete(co_t *co){
   for(__col_t **curr = &co_head, *entry;*curr;){
     entry = *curr;
@@ -131,7 +113,7 @@ static inline co_t *__co_list_fetch(){
   co_t *ret = NULL;
 
   for(__col_t *entry = co_head;entry;entry = entry->next){
-    if(entry->co != co_current && entry->co->status != CO_DEAD && entry->co->status != CO_WAITING){
+    if(entry->co != co_current && entry->co->status != CO_DEAD){
         if(entry->co->yield_cnt < minn){
           minn = entry->co->yield_cnt;
           ret = entry->co;
@@ -145,9 +127,6 @@ static inline co_t *__co_list_fetch(){
 static inline void __co_resume(co_t *co){
 
   assert(co->status != CO_DEAD);
-  __co_callstack_push(co_current);
-
-  debug("[call] %s -> %s\n",co_current->name,co->name);
 
   co_current = co;
 
@@ -158,14 +137,8 @@ static inline void __co_resume(co_t *co){
     longjmp(co->context,0);
   }
 
-  co_prev = __co_callstack_pop();
-
-  co_current = co_prev;
-
-  debug("[ret] %s -> %s\n",co_current->name,co_prev->name);
-
-  assert(co_prev!=NULL);
-  longjmp(co_prev->context,2);
+  co_current->status = CO_DEAD;
+  co_yield(); // context switch
 }
 
 __attribute__((constructor)) static inline void __co_init(){
@@ -193,6 +166,7 @@ void co_wait(struct co *co) {
     co_yield();
   
   co->waiter = NULL;
+  co_current->status = CO_RUNNING;
   __co_list_delete(co);
   
 }
@@ -208,11 +182,6 @@ void co_yield() {
       __co_resume(entry);
       break;
     case 1:
-      co_current -> status = CO_RUNNING;
-      break;
-    case 2:
-      co_current -> status = CO_RUNNING;
-      entry->status = CO_DEAD;
       break;
     default:
       assert(0); // never reach here
