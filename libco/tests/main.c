@@ -4,8 +4,8 @@
 #include <string.h>
 #include "co-test.h"
 
-#define ENABLE_TEST1 1
-#define ENABLE_TEST2 0
+#define ENABLE_TEST1 0
+#define ENABLE_TEST2 1
 
 int g_count = 0;
 
@@ -101,17 +101,17 @@ static void test_2() {
     Queue *queue = q_new();
 
     struct co *thd1 = co_start("producer-1", producer, queue);
-    // struct co *thd2 = co_start("producer-2", producer, queue);
+    struct co *thd2 = co_start("producer-2", producer, queue);
     struct co *thd3 = co_start("consumer-1", consumer, queue);
-    // struct co *thd4 = co_start("consumer-2", consumer, queue);
+    struct co *thd4 = co_start("consumer-2", consumer, queue);
 
     co_wait(thd1);
-    // co_wait(thd2);
+    co_wait(thd2);
 
     g_running = 0;
 
     co_wait(thd3);
-    // co_wait(thd4);
+    co_wait(thd4);
 
     while (!q_is_empty(queue)) {
         do_consume(queue);
@@ -127,7 +127,7 @@ int main() {
     printf("Test #1. Expect: (X|Y){0, 1, 2, ..., 199}\n");
     test_1();
 #endif
-    
+
 #if ENABLE_TEST2
     printf("\n\nTest #2. Expect: (libco-){200, 201, 202, ..., 399}\n");
     test_2();

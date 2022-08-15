@@ -48,6 +48,9 @@ typedef struct __col{
 } __col_t;
 
 co_t __co_boot = {
+  .name = "main",
+  .func = NULL,
+  .arg = NULL,
   .status = CO_RUNNING
 };
 
@@ -135,7 +138,7 @@ static inline void __co_resume(co_t *co){
 
   assert(co->status != CO_DEAD);
   __co_callstack_push(co_current);
-
+  
   co_current = co;
 
   if(co->status == CO_NEW){
@@ -146,7 +149,7 @@ static inline void __co_resume(co_t *co){
   }
 
   co_prev = __co_callstack_pop();
-  
+
   co_current = co_prev;
   assert(co_prev!=NULL);
   longjmp(co_prev->context,2);
