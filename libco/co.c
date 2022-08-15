@@ -39,7 +39,7 @@ typedef struct co  {
   struct co *waiter;
   jmp_buf context;
 
-  uint8_t stack[STACK_SIZE] __ALIGN__
+  uint8_t stack[STACK_SIZE] __ALIGN__;
 } co_t;
 
 typedef struct __col{
