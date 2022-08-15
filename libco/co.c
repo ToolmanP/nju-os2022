@@ -127,7 +127,7 @@ static inline void __co_list_delete(co_t *co){
 }
 
 static inline co_t *__co_list_fetch(){
-  uint32_t minn = UINT32_MAX;
+  uint32_t minn = 0xFFFFFFFF;
   co_t *ret = NULL;
 
   for(__col_t *entry = co_head;entry;entry = entry->next){
@@ -209,6 +209,7 @@ void co_yield() {
       break;
     case 1:
       co_current -> status = CO_RUNNING;
+      break;
     case 2:
       co_current -> status = CO_RUNNING;
       entry->status = CO_DEAD;
