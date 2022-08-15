@@ -146,7 +146,8 @@ static inline void __co_resume(co_t *co){
   }
 
   co_prev = __co_callstack_pop();
-
+  
+  co_current = co_prev;
   assert(co_prev!=NULL);
   longjmp(co_prev->context,2);
 }
