@@ -152,6 +152,7 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
   co->name = name;
   co->status = CO_NEW;
   co->yield_cnt = 0;
+  
   __co_list_append(co);
   return co;
 }
