@@ -4,8 +4,8 @@
 #include <string.h>
 #include "co-test.h"
 
-#define ENABLE_TEST1 0
-#define ENABLE_TEST2 1
+#define ENABLE_TEST1 1
+#define ENABLE_TEST2 0
 
 int g_count = 0;
 

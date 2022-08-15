@@ -38,6 +38,7 @@ typedef struct co  {
   enum co_status status;
   struct co *waiter;
   jmp_buf context;
+  uint32_t yield_cnt;
 
   uint8_t stack[STACK_SIZE] __ALIGN__;
 } co_t;
@@ -47,18 +48,19 @@ typedef struct __col{
   struct __col *next;
 } __col_t;
 
-co_t __co_boot = {
+static co_t __co_boot = {
   .name = "main",
   .func = NULL,
   .arg = NULL,
-  .status = CO_RUNNING
+  .status = CO_RUNNING,
+  .yield_cnt = 0
 };
 
-co_t *co_current = &__co_boot;
-co_t *co_prev;
+static co_t *co_current = &__co_boot;
+static co_t *co_prev;
 
-__col_t *co_head,*co_tail;
-__col_t *co_stack;
+static __col_t *co_head,*co_tail;
+static __col_t *co_stack;
 
 static inline void stack_switch_call(void *sp,void *entry,uintptr_t arg){
   asm volatile (
@@ -114,7 +116,7 @@ static inline void __co_list_delete(co_t *co){
     entry = *curr;
     if(entry->co == co){
       *curr = entry->next;
-      __co_alloc(entry->co);
+      __co_free(entry->co);
       free(entry);
       return;
     }else{
@@ -125,13 +127,19 @@ static inline void __co_list_delete(co_t *co){
 }
 
 static inline co_t *__co_list_fetch(){
+  uint32_t minn = UINT32_MAX;
+  co_t *ret = NULL;
+
   for(__col_t *entry = co_head;entry;entry = entry->next){
-    if(entry->co != co_current
-      && entry->co->status != CO_DEAD && entry->co->status != CO_WAITING)
-      return entry->co; 
+    if(entry->co != co_current && entry->co->status != CO_DEAD && entry->co->status != CO_WAITING){
+        if(entry->co->yield_cnt < minn){
+          minn = entry->co->yield_cnt;
+          ret = entry->co;
+        }
+      }
   }
-  assert(0);
-  return NULL;
+  assert(ret);
+  return ret;
 }
 
 static inline void __co_resume(co_t *co){
@@ -168,35 +176,39 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
   co->func = func;
   co->name = name;
   co->status = CO_NEW;
+  co->yield_cnt = 0;
   __co_list_append(co);
   return co;
 }
 
 void co_wait(struct co *co) {
 
-  co_current->status = CO_WAITING;
+  co_current->status = CO_WAITING;  
   co->waiter = co_current;
   
   while(co->status != CO_DEAD)
     co_yield();
   
   co->waiter = NULL;
-  co_current -> status = CO_RUNNING;
   __co_list_delete(co);
   
 }
 
 void co_yield() {
-  co_t *co = __co_list_fetch();
+  co_t *entry = __co_list_fetch();
   int val = setjmp(co_current->context);
+
+  entry->yield_cnt++;
+  
   switch(val){
     case 0:
-      __co_resume(co);
+      __co_resume(entry);
       break;
     case 1:
-      break;
+      co_current -> status = CO_RUNNING;
     case 2:
-      co->status = CO_DEAD;
+      co_current -> status = CO_RUNNING;
+      entry->status = CO_DEAD;
       break;
     default:
       assert(0); // never reach here
