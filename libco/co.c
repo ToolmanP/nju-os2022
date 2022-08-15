@@ -58,7 +58,7 @@ static co_t __co_boot = {
 
 static co_t *co_current = &__co_boot;
 
-static __col_t *co_head,*co_tail;
+static __col_t *co_head;
 
 static inline void stack_switch_call(void *sp,void *entry,uintptr_t arg){
   asm volatile (
@@ -88,9 +88,10 @@ static inline __col_t *__co_list_alloc(co_t *co){
   return entry;
 }
 
-static inline void __co_list_append(co_t *co){
-  co_tail->next = __co_list_alloc(co);
-  co_tail = co_tail->next;
+static inline void __co_list_insert(co_t *co){
+  __col_t *entry = __co_list_alloc(co);
+  entry->next = co_head;
+  co_head = entry;
 }
 
 static inline void __co_list_delete(co_t *co){
@@ -142,7 +143,6 @@ static inline void __co_resume(co_t *co){
 
 __attribute__((constructor)) static inline void __co_init(){
   co_head = __co_list_alloc(co_current);
-  co_tail = co_head;
 }
 
 struct co *co_start(const char *name, void (*func)(void *), void *arg) {
@@ -152,7 +152,7 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
   co->name = name;
   co->status = CO_NEW;
   co->yield_cnt = 0;
-  
+
   __co_list_append(co);
   return co;
 }
