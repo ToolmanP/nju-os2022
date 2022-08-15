@@ -139,7 +139,8 @@ static inline void __co_resume(co_t *co){
   }
 
   asm volatile ("":::"memory");
-  co_current->status = CO_DEAD;
+  volatile co_t *tmp = co_current;
+  tmp->status = CO_DEAD;
   co_yield(); // context switch
 }
 
