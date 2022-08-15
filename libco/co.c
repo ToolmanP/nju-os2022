@@ -57,9 +57,9 @@ static co_t __co_boot = {
   .yield_cnt = 0
 };
 
-static co_t *co_current = &__co_boot;
+static volatile co_t *co_current = &__co_boot;
 
-static __col_t *co_head;
+static volatile __col_t *co_head;
 
 static inline void stack_switch_call(void *sp,void *entry,uintptr_t arg){
   asm volatile (
@@ -138,6 +138,7 @@ static inline void __co_resume(co_t *co){
     longjmp(co->context,0);
   }
 
+  asm volatile ("":::"memory");
   co_current->status = CO_DEAD;
   co_yield(); // context switch
 }
