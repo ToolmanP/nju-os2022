@@ -21,6 +21,14 @@ enum co_status{
   CO_DEAD
 };
 
+#if __x86_64__
+  #define ALIGN_SIZE 16
+#else
+  #define ALIGN_SIZE 8
+#endif
+
+#define __ALIGN__ __attribute__((aligned(ALIGN_SIZE)))
+
 typedef struct co  {
 
   const char *name;
@@ -31,7 +39,7 @@ typedef struct co  {
   struct co *waiter;
   jmp_buf context;
 
-  uint8_t stack[STACK_SIZE] __attribute__((aligned(16)));
+  uint8_t stack[STACK_SIZE] __ALIGN__
 } co_t;
 
 typedef struct __col{
@@ -44,9 +52,10 @@ co_t __co_boot = {
 };
 
 co_t *co_current = &__co_boot;
-co_t *co_prev = NULL;
+co_t *co_prev;
 
 __col_t *co_head,*co_tail;
+__col_t *co_stack;
 
 static inline void stack_switch_call(void *sp,void *entry,uintptr_t arg){
   asm volatile (
@@ -68,20 +77,6 @@ static inline void __co_free(co_t *co){
   free(co);
 }
 
-static inline void __co_resume(co_t *co){
-  assert(co->status != CO_DEAD);
-  co_prev = co_current;
-  co_current = co;
-  if(co->status == CO_NEW){
-    co->status = CO_RUNNING;
-    stack_switch_call(co->stack+STACK_SIZE,co->func,(uintptr_t)co->arg);
-  }else{
-    longjmp(co->context,0);
-  }
-  co_current = co_prev;
-  assert(co_current != NULL);
-  longjmp(co_prev->context,2);
-}
 
 static inline __col_t *__co_list_alloc(co_t *co){
   __col_t *entry = malloc(sizeof(__col_t));
@@ -90,10 +85,26 @@ static inline __col_t *__co_list_alloc(co_t *co){
   return entry;
 }
 
-static inline void __co_list_insert(co_t *co){
+static inline void __co_list_append(co_t *co){
   co_tail->next = __co_list_alloc(co);
   co_tail = co_tail->next;
 }
+
+static inline void __co_callstack_push(co_t *co){
+  __col_t *entry = __co_list_alloc(co);
+  entry->next = co_stack;
+  entry->co = co;
+  co_stack = entry;
+}
+
+static inline co_t *__co_callstack_pop(){
+  assert(co_stack != NULL);
+  __col_t **curr = &co_stack;
+  __col_t *entry = *curr;
+  *curr = entry->next;
+  return entry->co;
+}
+
 
 static inline void __co_list_delete(co_t *co){
   for(__col_t **curr = &co_head, *entry;*curr;){
@@ -120,6 +131,26 @@ static inline co_t *__co_list_fetch(){
   return NULL;
 }
 
+static inline void __co_resume(co_t *co){
+
+  assert(co->status != CO_DEAD);
+  __co_callstack_push(co_current);
+
+  co_current = co;
+
+  if(co->status == CO_NEW){
+    co->status = CO_RUNNING;
+    stack_switch_call(co->stack+STACK_SIZE,co->func,(uintptr_t)co->arg);
+  }else{
+    longjmp(co->context,0);
+  }
+
+  co_prev = __co_callstack_pop();
+
+  assert(co_prev!=NULL);
+  longjmp(co_prev->context,2);
+}
+
 __attribute__((constructor)) static inline void __co_init(){
   co_head = __co_list_alloc(co_current);
   co_tail = co_head;
@@ -131,7 +162,7 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
   co->func = func;
   co->name = name;
   co->status = CO_NEW;
-  __co_list_insert(co);
+  __co_list_append(co);
   return co;
 }
 
