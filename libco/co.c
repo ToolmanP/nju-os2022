@@ -127,7 +127,7 @@ static inline void __co_list_delete(co_t *co){
 static inline co_t *__co_list_fetch(){
   for(__col_t *entry = co_head;entry;entry = entry->next){
     if(entry->co != co_current
-      && entry->co->status != CO_DEAD)
+      && entry->co->status != CO_DEAD && entry->co->status != CO_WAITING)
       return entry->co; 
   }
   assert(0);
