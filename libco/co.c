@@ -163,7 +163,7 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
 void co_wait(struct co *co) {
 
   co_current->status = CO_WAITING;  
-  co->waiter = co_current;
+  co->waiter = (co_t *)co_current;
   
   while(co->status != CO_DEAD)
     co_yield();
@@ -176,7 +176,7 @@ void co_wait(struct co *co) {
 
 void co_yield() {
   co_t *entry = __co_list_fetch();
-  int val = setjmp(co_current->context);
+  int val = setjmp(((co_t *)co_current)->context);
 
   entry->yield_cnt++;
   
