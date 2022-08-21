@@ -126,7 +126,6 @@ static inline co_t *__co_list_fetch(){
   assert(ret);
   return ret;
 }
-__attribute__((optimize("-O0")))
 __attribute__((noinline))
 static void __co_resume(co_t *co){
 
