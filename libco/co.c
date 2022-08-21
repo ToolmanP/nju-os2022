@@ -3,6 +3,7 @@
 #include <setjmp.h>
 #include <malloc.h>
 #include <assert.h>
+#include <stdatomic.h>
 
 #include "co.h"
 
@@ -138,8 +139,8 @@ static inline void __co_resume(co_t *co){
     longjmp(co->context,0);
   }
   
-  volatile co_t *current;
   co_current->status = CO_DEAD;
+  __sync_synchronize();
   co_yield(); // context switch
 }
 
