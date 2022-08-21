@@ -58,7 +58,7 @@ static co_t __co_boot = {
   .yield_cnt = 0
 };
 
-static co_t *co_current = &__co_boot;
+static volatile co_t *co_current = &__co_boot;
 
 static __col_t *co_head;
 
@@ -130,8 +130,6 @@ static inline void __co_resume(co_t *co){
 
   assert(co->status != CO_DEAD);
 
-  volatile co_t **cur = &co_current;
-
   co_current = co;
 
   if(co->status == CO_NEW){
@@ -141,13 +139,13 @@ static inline void __co_resume(co_t *co){
     longjmp(co->context,0);
   }
   
-  (*cur)->status = CO_DEAD;
+  co_current->status = CO_DEAD;
   __sync_synchronize();
   co_yield(); // context switch
 }
 
 __attribute__((constructor)) static inline void __co_init(){
-  co_head = __co_list_alloc(co_current);
+  co_head = __co_list_alloc((co_t *)co_current);
 }
 
 struct co *co_start(const char *name, void (*func)(void *), void *arg) {
