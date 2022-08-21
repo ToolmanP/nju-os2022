@@ -127,7 +127,7 @@ static inline co_t *__co_list_fetch(){
   return ret;
 }
 
-static inline void __co_resume(co_t *co){
+static void __co_resume(co_t *co){
 
   assert(co->status != CO_DEAD);
 
