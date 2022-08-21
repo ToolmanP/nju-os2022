@@ -111,6 +111,7 @@ static inline void __co_list_delete(co_t *co){
   assert(0); // connot reach here;
 }
 
+
 static inline co_t *__co_list_fetch(){
   uint32_t minn = 0xFFFFFFFF;
   co_t *ret = NULL;
@@ -125,6 +126,13 @@ static inline co_t *__co_list_fetch(){
   assert(ret);
   return ret;
 }
+
+__attribute__((noinline))
+static void __co_change_status(co_t *co,int status){
+  co->status = status;
+  __sync_synchronize();
+}
+
 __attribute__((noinline))
 static void __co_resume(co_t *co){
 
@@ -133,17 +141,13 @@ static void __co_resume(co_t *co){
   co_current = co;
 
   if(co->status == CO_NEW){
-    co->status = CO_RUNNING;
+    __co_change_status(co,CO_RUNNING);
     stack_switch_call(co->stack+STACK_SIZE,co->func,(uintptr_t)co->arg);
   }else{
     longjmp(co->context,0);
   }
 
-#pragma GCC push_options
-#pragma GCC optimize("O0")
-  co_current->status = CO_DEAD;
-  __sync_synchronize();
-#pragma GCC pop_options
+  __co_change_status((co_t *)co_current,CO_DEAD);
   co_yield(); // context switch
 }
 
@@ -165,14 +169,14 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg) {
 
 void co_wait(struct co *co) {
 
-  co_current->status = CO_WAITING;  
+  __co_change_status((co_t *)co_current,CO_WAITING);
   co->waiter = (co_t *)co_current;
   
   while(co->status != CO_DEAD)
     co_yield();
   
   co->waiter = NULL;
-  co_current->status = CO_RUNNING;
+  __co_change_status((co_t *)co_current,CO_RUNNING);
   __co_list_delete(co);
   
 }
