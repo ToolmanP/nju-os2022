@@ -59,7 +59,6 @@ static co_t __co_boot = {
 };
 
 static volatile co_t *co_current = &__co_boot;
-static volatile co_t **co_current_p = &co_current;
 
 static __col_t *co_head;
 
@@ -139,9 +138,12 @@ static void __co_resume(co_t *co){
   }else{
     longjmp(co->context,0);
   }
-  
-  (*co_current_p)->status = CO_DEAD;
+
+#pragma GCC push_options
+#pragma GCC optimize("O0")
+  co_current->status = CO_DEAD;
   __sync_synchronize();
+#pragma GCC pop_options
   co_yield(); // context switch
 }
 
