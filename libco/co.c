@@ -59,6 +59,7 @@ static co_t __co_boot = {
 };
 
 static volatile co_t *co_current = &__co_boot;
+static volatile co_t **co_current_p = &co_current;
 
 static __col_t *co_head;
 
@@ -139,7 +140,7 @@ static inline void __co_resume(co_t *co){
     longjmp(co->context,0);
   }
   
-  co_current->status = CO_DEAD;
+  (*co_current_p)->status = CO_DEAD;
   __sync_synchronize();
   co_yield(); // context switch
 }
