@@ -130,6 +130,8 @@ static inline void __co_resume(co_t *co){
 
   assert(co->status != CO_DEAD);
 
+  volatile co_t **cur = &co_current;
+
   co_current = co;
 
   if(co->status == CO_NEW){
@@ -139,7 +141,7 @@ static inline void __co_resume(co_t *co){
     longjmp(co->context,0);
   }
   
-  co_current->status = CO_DEAD;
+  (*cur)->status = CO_DEAD;
   __sync_synchronize();
   co_yield(); // context switch
 }
