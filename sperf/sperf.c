@@ -24,7 +24,7 @@ assert(0);\
 #endif
 #define MAXCMDLEN 4096
 #define MAXARGS 1024
-#define MAXSYSCALLNAME 64
+#define MAXSYSCALLNAME 256
 #define MAXGROUPS 3
 typedef struct node{
   char syscall[MAXSYSCALLNAME];
