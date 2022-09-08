@@ -42,11 +42,10 @@ int main(int argc, char *argv[], char *envp[])
 { 
   setbuf(stdout,NULL);
   int pid,fildes[2];
-  char *PATH,*token;
-  char buf[4096] = {0};
+  char *PATH,*token,*program;
   size_t maxlen;
   ssize_t nreads;
-  FILE *out;
+
   assert(argc>=2);
 
   if(pipe(fildes)>0)
@@ -54,15 +53,16 @@ int main(int argc, char *argv[], char *envp[])
   
   PATH = getenv("PATH");
   maxlen = 4096;
+  program = argv[1];
   argv[1] = exec_cmd;
+  
   pid = fork();
   if(pid == 0){
     close(fildes[0]);
     dup2(fildes[1],STDERR_FILENO);
     token = strtok(PATH,":");
     while(token){
-      sprintf(exec_cmd,"%s/%s",token,argv[1]);
-      printf("%s\n\n",argv[1]);
+      sprintf(argv[1],"%s/%s",token,program);
       execve(argv[1],argv+1,envp);
       token = strtok(NULL,":");
     }
