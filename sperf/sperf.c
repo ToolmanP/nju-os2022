@@ -132,7 +132,7 @@ int main(int argc, char *argv[], char *envp[])
     wait(NULL);
   }
   SLIST_FOREACH(elm,hd,field){
-    printf("%lf\n",elm->duration);
+    printf("%s: %lf\n",elm->syscall,->duration);
   }
   return 0;
 }
