@@ -22,12 +22,14 @@ static char cmd[MAXCMDLEN];
 
 int main(int argc, char *argv[]) {
 
-
+  assert(argc>=2);
   PATH = getenv("PATH");
   char *token = strtok(PATH,":");
   while(token){
     printf("%s\n",token);
     token = strtok(NULL,":");
+    sprintf(cmd,"%s/%s",token,argv[1]);
+    printf("%s\n",cmd);
   }
   // assert(argc>=2);
   // pipe(flides);
