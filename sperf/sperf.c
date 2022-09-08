@@ -63,8 +63,8 @@ int main(int argc, char *argv[], char *envp[])
     close(fildes[0]);
     dup2(fildes[1],STDERR_FILENO);
     token = strtok(PATH,":");
-    for(char **env = envp;*env;env++)
-      printf("env: %s\n",*env);
+    // for(char **env = envp;*env;env++)
+    //   printf("env: %s\n",*env);
     while(token){
       sprintf(argv[0],"%s/strace",token);
       execve(argv[0],argv,envp);
