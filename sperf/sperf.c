@@ -102,7 +102,9 @@ int main(int argc, char *argv[], char *envp[])
     while((nreads = getline(&line,&maxlen,in)) != -1){
       if(regexec(&regexCompiled,line,MAXGROUPS,matchGroups,0) == 0){
         tmp = regex_extract(line,matchGroups+1);
+        printf("%s\n",tmp);
         tmp = regex_extract(line,matchGroups+2);
+        printf("%s\n",tmp);
       }
     }
   }
