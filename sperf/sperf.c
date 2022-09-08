@@ -46,7 +46,7 @@ int main(int argc, char *argv[], char *envp[])
   size_t maxlen;
   ssize_t nreads;
   FILE *in;
-
+  
   assert(argc>=2);
   setbuf(stdout,NULL);
   setbuf(stderr,NULL);
@@ -58,7 +58,7 @@ int main(int argc, char *argv[], char *envp[])
   maxlen = 4096;
   argv[0] = exec_cmd;
   pid = fork();
-
+  line = NULL;
   if(pid == 0){
     close(pipes[0]);
     dup2(pipes[1],STDERR_FILENO);
