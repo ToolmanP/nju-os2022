@@ -56,6 +56,7 @@ int main(int argc, char *argv[], char *envp[])
   argv[1] = exec_cmd;
   pid = fork();
   if(pid == 0){
+    close(fildes[0]);
     dup2(fildes[1],STDERR_FILENO);
     token = strtok(PATH,":");
     while(token){
@@ -65,6 +66,7 @@ int main(int argc, char *argv[], char *envp[])
     }
     assert(0);
   }else{
+    close(fildes[1]);
     wait(NULL);
     memset(buf,0,sizeof(buf));
     while((nreads = read(fildes[0],buf,maxlen)) != 0){
