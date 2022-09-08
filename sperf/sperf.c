@@ -77,7 +77,7 @@ static inline void statistics(head_t *hd){
   }
   SLIST_FOREACH(elm,hd,field){
     percentage = 100*elm->duration/tot;
-    printf("%s(%.2x%%)\n",elm->syscall,percentage);
+    printf("%s(%.2f%%)\n",elm->syscall,percentage);
   }
 }
 int main(int argc, char *argv[], char *envp[])
