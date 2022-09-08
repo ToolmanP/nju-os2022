@@ -42,8 +42,9 @@ int main(int argc, char *argv[], char *envp[])
 {
   int pid,fildes[2];
   char *PATH,*token;
-  // size_t maxlen;
-  // ssize_t nreads;
+  char buf[4096] = {0};
+  size_t maxlen;
+  ssize_t nreads;
   FILE *out;
   assert(argc>=2);
 
@@ -51,9 +52,8 @@ int main(int argc, char *argv[], char *envp[])
     assert(0);
   
   PATH = getenv("PATH");
-  // maxlen = 4096;
+  maxlen = 4096;
   argv[1] = exec_cmd;
-  // line = NULL;
   pid = fork();
   if(pid == 0){
     dup2(fildes[1],STDERR_FILENO);
@@ -65,10 +65,12 @@ int main(int argc, char *argv[], char *envp[])
     }
     assert(0);
   }else{
-    // out = fdopen(fildes[0],"r");
-    // while((nreads = getline(&line,&maxlen,out)) != -1){
-    //   printf("%s",line);
-    // }
+    wait(NULL);
+    memset(buf,0,sizeof(buf));
+    while((nreads = read(fildes[0],buf,maxlen)) != 0){
+      printf("%s",buf);
+      memset(buf,0,sizeof(buf));
+    }
   }
   // assert(argc>=2);
   // pipe(flides);
