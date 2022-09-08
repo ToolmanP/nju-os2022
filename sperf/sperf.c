@@ -35,15 +35,13 @@ static struct timeval timeout = {
   .tv_sec = 1,
   .tv_usec = 0
 };
-
+static char exec_cmd[MAXCMDLEN];
+static char *exec_argv[MAXCMDLEN];
+static char tmp[MAXCMDLEN];
 int main(int argc, char *argv[], char *envp[])
 { 
 
   int pid,pipes[2];
-
-  char exec_cmd[MAXCMDLEN];
-  char *exec_argv[MAXCMDLEN];
-  char tmp[MAXCMDLEN];
   char *line,*ppath;
   char **pexec_arg,**parg;
 
@@ -80,7 +78,8 @@ int main(int argc, char *argv[], char *envp[])
     in = fdopen(pipes[0],"r");
     line = NULL;
     while((nreads = getline(&line,&maxlen,in)) != -1){
-      printf("%s",line);
+      fprintf(stderr,"%s",line);
+
     }
   }
   // assert(argc>=2);
