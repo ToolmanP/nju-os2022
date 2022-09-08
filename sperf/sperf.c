@@ -68,6 +68,18 @@ static inline void syscall_list_insert(head_t *hd,char *csys, double dur){
   SLIST_INSERT_HEAD(hd,elm,field);
 }
 
+static inline void statistics(head_t *hd){
+  node_t *elm;
+  double tot = 0;
+  int percentage;
+  SLIST_FOREACH(elm,hd,field){
+    tot+=elm->duration;
+  }
+  SLIST_FOREACH(elm,hd,field){
+    percentage = (int)(elm->duration/tot);
+    printf("%s(%d)\n",elm->syscall,percentage);
+  }
+}
 int main(int argc, char *argv[], char *envp[])
 { 
 
@@ -130,9 +142,7 @@ int main(int argc, char *argv[], char *envp[])
       }
     }
     wait(NULL);
-  }
-  SLIST_FOREACH(elm,hd,field){
-    printf("%s: %lf\n",elm->syscall,elm->duration);
+    statistics(hd);
   }
   return 0;
 }
