@@ -5,11 +5,10 @@
 #include <assert.h>
 #include <malloc.h>
 #include <regex.h>
-#include <signal.h>
 #include <sys/queue.h>
 #include <sys/time.h>
 #include <sys/wait.h>
-#include <time.h>
+#include <linux/time.h>
 
 #ifdef LOCAL_MACHINE
 #define TODO()\
@@ -44,6 +43,7 @@ static char exec_cmd[MAXCMDLEN];
 static char *exec_argv[MAXCMDLEN];
 static char tmp[MAXCMDLEN];
 static char buf[MAXCMDLEN];
+static timer_t timer = NULL;
 
 static inline char *regex_extract(char *str,regmatch_t *regMatch){
   static char buf[MAXSYSCALLNAME] = {0};
@@ -80,6 +80,11 @@ static inline void statistics(head_t *hd){
     printf("%s(%.2f%%)\n",elm->syscall,percentage);
   }
 }
+
+static void timer_function(){
+
+}
+
 int main(int argc, char *argv[], char *envp[])
 { 
 
@@ -108,11 +113,11 @@ int main(int argc, char *argv[], char *envp[])
   maxlen = 4096;
   exec_argv[0] = exec_cmd;
   exec_argv[1] = "-T";
-  in = fdopen(pipes[0],"r");
-  line = NULL;
+
   for(pexec_arg=exec_argv+2,parg=argv+1;*parg;pexec_arg++,parg++)
     *pexec_arg=*parg;
   *pexec_arg = "2>/dev/null";
+
   if(reti = regcomp(&regexCompiled,"([^(]*)\\(.*\\)\\s*=\\s-??[0-9a-fx]*\\s[^<]*<([.0-9]*)>",REG_EXTENDED)){
     printf("Regex Compilaton Error\n");
     exit(EXIT_FAILURE);
@@ -121,6 +126,11 @@ int main(int argc, char *argv[], char *envp[])
   hd = malloc(sizeof(head_t));
   SLIST_INIT(hd);
 
+  in = fdopen(pipes[0],"r");
+  line = NULL;
+
+  timer = init_timer(&timer);
+  
   if((pid = fork()) == 0){
     close(pipes[0]);
     dup2(pipes[1],STDERR_FILENO);
@@ -141,8 +151,6 @@ int main(int argc, char *argv[], char *envp[])
         syscall_list_insert(hd,rtmp,duration);
       }
     }
-    wait(NULL);
-    statistics(hd);
   }
   return 0;
 }
