@@ -42,7 +42,7 @@ int main(int argc, char *argv[], char *envp[])
   char *exec_envp[] = {"PATH=/usr/bin",NULL};
 
   int pid,fildes[2];
-  char *PATH,*token;
+  // char *PATH,*token;
 
   assert(argc>=2);
 
