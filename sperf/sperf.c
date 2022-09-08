@@ -24,6 +24,7 @@ assert(0);\
 #endif
 #define MAXCMDLEN 4096
 #define MAXARGS 1024
+#define MAXGROUPS 3
 typedef struct node{
   char cmd[MAXCMDLEN];
   float duration;
@@ -38,15 +39,18 @@ static struct timeval timeout = {
 static char exec_cmd[MAXCMDLEN];
 static char *exec_argv[MAXCMDLEN];
 static char tmp[MAXCMDLEN];
+
+
 int main(int argc, char *argv[], char *envp[])
 { 
 
-  int pid,pipes[2];
+  int pid,pipes[2],reti,i;
   char *line,*ppath;
   char **pexec_arg,**parg;
-
   size_t maxlen;
   ssize_t nreads;
+  regex_t regexCompiled;
+  regmatch_t matchGroups[MAXGROUPS];
   FILE *in;
 
   assert(argc>=2);
@@ -60,9 +64,16 @@ int main(int argc, char *argv[], char *envp[])
   maxlen = 4096;
   exec_argv[0] = exec_cmd;
   exec_argv[1] = "-T";
+
   for(pexec_arg=exec_argv+2,parg=argv+1;*parg;pexec_arg++,parg++)
     *pexec_arg=*parg;
-  *pexec_arg = "&>/dev/null";
+
+  *pexec_arg = "2>/dev/null";
+
+  if(reti = regcomp(&regexCompiled,"([^(]*)\(.*\)\s*= -?[0-9][^<]*<([.0-9]*)>",REG_EXTENDED)){
+    printf("Regex Compilaton Error\n");
+    exit(EXIT_FAILURE);
+  }
 
   if((pid = fork()) == 0){
     close(pipes[0]);
@@ -79,17 +90,15 @@ int main(int argc, char *argv[], char *envp[])
     in = fdopen(pipes[0],"r");
     line = NULL;
     while((nreads = getline(&line,&maxlen,in)) != -1){
-      printf("%s",line);
+      if(regexec(&regexCompiled,line,MAXGROUPS,matchGroups,0) == 0){
+        for(i=0;i<MAXGROUPS;i++){
+          if(matchGroups[i].rm_so == -1)
+            break;
+          printf("%d\n",matchGroups[i].rm_eo);
+        }
+      }
     }
   }
-  // assert(argc>=2);
-  // pipe(pipes);
-  // pid = fork();
-  
-
-  // execve("/bin/strace",     exec_argv, exec_envp);
-  // execve("/usr/bin/strace", exec_argv, exec_envp);
-  // perror(exec_argv[0]);
-  // exit(EXIT_FAILURE);
+  regfree(&regexCompiled);
   return 0;
 }
