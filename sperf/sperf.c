@@ -94,7 +94,7 @@ int main(int argc, char *argv[], char *envp[])
         for(i=0;i<MAXGROUPS;i++){
           if(matchGroups[i].rm_so == -1)
             break;
-          printf("%d\n",matchGroups[i].rm_eo);
+          printf("%d: %d\n",i,matchGroups[i].rm_eo);
         }
       }
     }
