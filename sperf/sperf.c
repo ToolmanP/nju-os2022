@@ -38,6 +38,9 @@ static char cmd[MAXCMDLEN];
 int main(int argc, char *argv[], char *envp[])
 {
 
+  char *exec_argv[] = {"/usr/bin/strace","ls",NULL};
+  char *exec_envp[] = {"PATH=/usr/bin",NULL};
+
   int pid,fildes[2];
   char *PATH,*token;
 
@@ -51,12 +54,13 @@ int main(int argc, char *argv[], char *envp[])
 
   if(pid == 0){
     // dup2(fildes[1],STDERR_FILENO);
-    token = strtok(PATH,":");
-    while(token){
-      sprintf(cmd,"%s/%s",token,argv[1]);
-      execve(cmd,argv+1,envp);
-      token = strtok(NULL,":");
-    }
+    // token = strtok(PATH,":");
+    // while(token){
+    //   sprintf(cmd,"%s/%s",token,argv[1]);
+    //   execve(cmd,argv+1,envp);
+    //   token = strtok(NULL,":");
+    // }
+    execve(exec_argv[0],exec_argv,exec_envp);
     assert(0);
   }else{
     wait(NULL);
