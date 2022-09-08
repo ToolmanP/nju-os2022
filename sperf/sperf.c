@@ -78,6 +78,7 @@ int main(int argc, char *argv[], char *envp[])
   double duration;
   
   head_t *hd;
+  node_t *elm;
   size_t maxlen;
   ssize_t nreads;
   regex_t regexCompiled;
@@ -120,7 +121,6 @@ int main(int argc, char *argv[], char *envp[])
     assert(0);
   }else{
     close(pipes[1]);
-
     while((nreads = getline(&line,&maxlen,in)) != -1){
       if(regexec(&regexCompiled,line,MAXGROUPS,matchGroups,0) == 0){
         rtmp = regex_extract(line,&matchGroups[2]);
@@ -129,7 +129,10 @@ int main(int argc, char *argv[], char *envp[])
         syscall_list_insert(hd,rtmp,duration);
       }
     }
+    wait(NULL);
   }
-  
+  SLIST_FOREACH(elm,hd,field){
+    printf("%lf\n",elm->duration);
+  }
   return 0;
 }
