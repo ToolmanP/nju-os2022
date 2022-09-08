@@ -62,7 +62,7 @@ int main(int argc, char *argv[], char *envp[])
   exec_argv[1] = "-T";
   for(pexec_arg=exec_argv+2,parg=argv+1;*parg;pexec_arg++,parg++)
     *pexec_arg=*parg;
-  *pexec_arg = ">/dev/null";
+  *pexec_arg = "&>/dev/null";
 
   if((pid = fork()) == 0){
     close(pipes[0]);
