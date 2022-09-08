@@ -31,7 +31,6 @@ typedef struct node{
 } node_t;
 typedef TAILQ_HEAD(head,node) head_t;
 
-static int flides[2];
 static char exec_cmd[MAXCMDLEN];
 static char exec_PATH[MAXCMDLEN];
 static struct timeval timeout = {
@@ -42,7 +41,7 @@ static struct timeval timeout = {
 int main(int argc, char *argv[], char *envp[])
 { 
 
-  int pid,fildes[2];
+  int pid,pipes[2];
   char *PATH,*line,*ppath;
   size_t maxlen;
   ssize_t nreads;
@@ -52,7 +51,7 @@ int main(int argc, char *argv[], char *envp[])
   setbuf(stdout,NULL);
   setbuf(stderr,NULL);
 
-  if(pipe(fildes)>0)
+  if(pipe(pipes)>0)
     assert(0);
   
   strcpy(exec_PATH,getenv("PATH"));
@@ -61,8 +60,8 @@ int main(int argc, char *argv[], char *envp[])
   pid = fork();
 
   if(pid == 0){
-    close(fildes[0]);
-    // dup2(fildes[1],STDERR_FILENO);
+    close(pipes[0]);
+    dup2(pipes[1],STDERR_FILENO);
     ppath = strtok(exec_PATH,":");
     while(ppath){
       sprintf(argv[0],"%s/strace",ppath);
@@ -71,14 +70,14 @@ int main(int argc, char *argv[], char *envp[])
     }
     assert(0);
   }else{
-    // close(fildes[1]);
-    // in = fdopen(fildes[0],"r");
-    // while((nreads = getline(&line,&maxlen,in)) != -1){
-    //   printf("%s",line);
-    // }
+    close(pipes[1]);
+    in = fdopen(pipes[0],"r");
+    while((nreads = getline(&line,&maxlen,in)) != -1){
+      printf("%s",line);
+    }
   }
   // assert(argc>=2);
-  // pipe(flides);
+  // pipe(pipes);
   // pid = fork();
   
 
