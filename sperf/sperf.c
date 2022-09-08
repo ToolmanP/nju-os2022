@@ -108,6 +108,5 @@ int main(int argc, char *argv[], char *envp[])
       }
     }
   }
-  regfree(&regexCompiled);
   return 0;
 }
