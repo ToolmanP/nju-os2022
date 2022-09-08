@@ -17,16 +17,18 @@ assert(0);\
 #define MAXCMDLEN 4096
 
 static int flides[2];
-static char cmd[MAXCMDLEN];
 static char *PATH = NULL;
+static char cmd[MAXCMDLEN];
 
 int main(int argc, char *argv[]) {
 
 
   PATH = getenv("PATH");
-  char *p;
-  while((p = strtok(PATH,":"))!=NULL)
-    printf("%s\n",p);
+  char *token = strtok(PATH,":");
+  while(token){
+    printf("%s\n",token);
+    token = strtok(NULL,":");
+  }
   // assert(argc>=2);
   // pipe(flides);
   // pid = fork();
@@ -34,7 +36,6 @@ int main(int argc, char *argv[]) {
 
   // execve("/bin/strace",     exec_argv, exec_envp);
   // execve("/usr/bin/strace", exec_argv, exec_envp);
-  printf("%s\n",getenv("PATH"));
   // perror(exec_argv[0]);
   // exit(EXIT_FAILURE);
   return 0;
