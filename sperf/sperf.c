@@ -42,7 +42,7 @@ static char *exec_argv[MAXCMDLEN];
 static char tmp[MAXCMDLEN];
 static char buf[MAXCMDLEN];
 
-static inline char *regex_extract(char *str,regmatch_t *regMatch){
+static char *regex_extract(char *str,regmatch_t *regMatch){
   static char buf[MAXSYSCALLNAME];
   char tmp = *(str+regMatch->rm_eo);
   *(str+regMatch->rm_eo) = 0;
