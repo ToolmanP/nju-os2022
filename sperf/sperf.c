@@ -71,13 +71,13 @@ static inline void syscall_list_insert(head_t *hd,char *csys, double dur){
 static inline void statistics(head_t *hd){
   node_t *elm;
   double tot = 0;
-  int percentage;
+  double percentage;
   SLIST_FOREACH(elm,hd,field){
     tot+=elm->duration;
   }
   SLIST_FOREACH(elm,hd,field){
-    percentage = (int)(elm->duration/tot*10000);
-    printf("%s(%d)\n",elm->syscall,percentage);
+    percentage = 100*elm->duration/tot;
+    printf("%s(%.2x%%)\n",elm->syscall,percentage);
   }
 }
 int main(int argc, char *argv[], char *envp[])
