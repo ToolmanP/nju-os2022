@@ -23,6 +23,6 @@ int main(int argc, char *argv[]) {
   // execve("/usr/bin/strace", exec_argv, exec_envp);
   
   
-  perror(argv[0]);
+  perror(exec_argv[0]);
   exit(EXIT_FAILURE);
 }
