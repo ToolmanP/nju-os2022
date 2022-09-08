@@ -96,7 +96,7 @@ int main(int argc, char *argv[], char *envp[])
             break;
           strcpy(buf,line);
           buf[matchGroups[i].rm_eo] = 0;
-          printf("%s\n",buf);
+          printf("%s\n",buf+matchGroups[i].rm_so);
         }
       }
     }
