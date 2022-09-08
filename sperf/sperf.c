@@ -1,13 +1,28 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <regex.h>
 #include <unistd.h>
+
+#ifdef LOCAL_MACHINE
+#define TODO()\ 
+do {\
+printf("This section is waiting you to finish"\
+assert(0)\
+}while(0)
+#else
+#define TODO()
+#endif
 
 int main(int argc, char *argv[]) {
   char *exec_argv[] = { "strace", "ls", NULL, };
   char *exec_envp[] = { "PATH=/bin", NULL, };
+  
   execve("strace",          exec_argv, exec_envp);
   execve("/bin/strace",     exec_argv, exec_envp);
   execve("/usr/bin/strace", exec_argv, exec_envp);
+  
+  
   perror(argv[0]);
   exit(EXIT_FAILURE);
 }
