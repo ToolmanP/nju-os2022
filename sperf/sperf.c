@@ -54,9 +54,9 @@ int main(int argc, char *argv[], char *envp[])
     token = strtok(PATH,":");
     while(token){
       sprintf(cmd,"%s/%s",token,argv[1]);
+      execve(cmd,argv+1,envp);
       token = strtok(NULL,":");
     }
-    execve(cmd,argv+1,envp);
     assert(0);
   }else{
     wait(NULL);
