@@ -25,7 +25,7 @@ int main(int argc, char *argv[],char *envp[]) {
   // execve("/bin/strace",     exec_argv, exec_envp);
   // execve("/usr/bin/strace", exec_argv, exec_envp);
   
-  printf("%s\n",getenv("PATH"))
+  printf("%s\n",getenv("PATH"));
   // perror(exec_argv[0]);
   // exit(EXIT_FAILURE);
   return 0;
