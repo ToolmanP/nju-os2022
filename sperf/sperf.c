@@ -43,10 +43,10 @@ int main(int argc, char *argv[], char *envp[])
 { 
 
   int pid,fildes[2];
-  char *PATH,*ppath;
-  char buf[MAXCMDLEN];
+  char *PATH,*line,*ppath;
   size_t maxlen;
   ssize_t nreads;
+  FILE *out;
 
   assert(argc>=2);
   setbuf(stdout,NULL);
@@ -72,10 +72,9 @@ int main(int argc, char *argv[], char *envp[])
     assert(0);
   }else{
     close(fildes[1]);
-    memset(buf,0,sizeof(buf));
-    while((nreads = read(fildes[0],buf,maxlen)) != 0){
-      printf("%s",buf);
-      memset(buf,0,sizeof(buf));
+    out = fdopen(fildes[0],"r");
+    while((nreads = getline(&line,&maxlen,out)) != -1){
+      printf("%s",line);
     }
   }
   // assert(argc>=2);
