@@ -18,10 +18,15 @@ assert(0);\
 
 static int flides[2];
 static char cmd[MAXCMDLEN];
+static char *PATH = NULL;
+
 int main(int argc, char *argv[]) {
 
 
-
+  PATH = getenv("PATH");
+  char *p;
+  while((p = strtok(PATH,":"))!=NULL)
+    printf("%s\n",p);
   // assert(argc>=2);
   // pipe(flides);
   // pid = fork();
