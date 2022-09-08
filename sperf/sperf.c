@@ -65,7 +65,6 @@ int main(int argc, char *argv[], char *envp[])
     }
     assert(0);
   }else{
-    wait(NULL);
     out = fdopen(fildes[0],"r");
     while((nreads = getline(&line,&maxlen,out)) != -1){
       printf("%s",line);
