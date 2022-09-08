@@ -39,7 +39,7 @@ static struct timeval timeout = {
 static char exec_cmd[MAXCMDLEN];
 static char *exec_argv[MAXCMDLEN];
 static char tmp[MAXCMDLEN];
-
+static char buf[MAXCMDLEN];
 
 int main(int argc, char *argv[], char *envp[])
 { 
@@ -94,7 +94,9 @@ int main(int argc, char *argv[], char *envp[])
         for(i=0;i<MAXGROUPS;i++){
           if(matchGroups[i].rm_so == -1)
             break;
-          printf("%d: %d\n",i,matchGroups[i].rm_eo);
+          strcpy(buf,line);
+          buf[matchGroups[i].rm_eo] = 0;
+          printf("%s\n",buf);
         }
       }
     }
