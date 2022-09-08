@@ -23,7 +23,7 @@ assert(0);\
 #define FAILURE()
 #endif
 #define MAXCMDLEN 4096
-
+#define MAXARGS 1024
 typedef struct node{
   char cmd[MAXCMDLEN];
   float duration;
@@ -31,8 +31,6 @@ typedef struct node{
 } node_t;
 typedef TAILQ_HEAD(head,node) head_t;
 
-static char exec_cmd[MAXCMDLEN];
-static char exec_PATH[MAXCMDLEN];
 static struct timeval timeout = {
   .tv_sec = 1,
   .tv_usec = 0
@@ -42,11 +40,17 @@ int main(int argc, char *argv[], char *envp[])
 { 
 
   int pid,pipes[2];
-  char *PATH,*line,*ppath;
+
+  char exec_cmd[MAXCMDLEN];
+  char *exec_argv[MAXCMDLEN];
+  char tmp[MAXCMDLEN];
+  char *line,*ppath;
+  char **pexec_arg,**parg;
+
   size_t maxlen;
   ssize_t nreads;
   FILE *in;
-  
+
   assert(argc>=2);
   setbuf(stdout,NULL);
   setbuf(stderr,NULL);
@@ -54,24 +58,27 @@ int main(int argc, char *argv[], char *envp[])
   if(pipe(pipes)>0)
     assert(0);
   
-  strcpy(exec_PATH,getenv("PATH"));
+  strcpy(tmp,getenv("PATH"));
   maxlen = 4096;
-  argv[0] = exec_cmd;
-  pid = fork();
-  line = NULL;
-  if(pid == 0){
+  exec_argv[0] = exec_cmd;
+  exec_argv[1] = "-T";
+  for(pexec_arg=exec_argv+2,parg=argv+1;*parg;pexec_arg++,parg++)
+    *pexec_arg=*parg;
+
+  if((pid = fork()) == 0){
     close(pipes[0]);
     dup2(pipes[1],STDERR_FILENO);
-    ppath = strtok(exec_PATH,":");
+    ppath = strtok(tmp,":");
     while(ppath){
-      sprintf(argv[0],"%s/strace",ppath);
-      execve(argv[0],argv,envp);
+      sprintf(exec_argv[0],"%s/strace",ppath);
+      execve(exec_argv[0],exec_argv,envp);
       ppath = strtok(NULL,":");
     }
     assert(0);
   }else{
     close(pipes[1]);
     in = fdopen(pipes[0],"r");
+    line = NULL;
     while((nreads = getline(&line,&maxlen,in)) != -1){
       printf("%s",line);
     }
