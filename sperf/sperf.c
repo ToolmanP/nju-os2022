@@ -5,11 +5,9 @@
 #include <assert.h>
 #include <malloc.h>
 #include <regex.h>
+#include <signal.h>
 #include <sys/queue.h>
-#include <sys/time.h>
 #include <sys/wait.h>
-#include <linux/time.h>
-
 #ifdef LOCAL_MACHINE
 #define TODO()\
 do {\
@@ -34,16 +32,11 @@ typedef struct node{
 
 typedef SLIST_HEAD(head,node) head_t;
 
-static struct timeval timeout = {
-  .tv_sec = 1,
-  .tv_usec = 0
-};
-
 static char exec_cmd[MAXCMDLEN];
 static char *exec_argv[MAXCMDLEN];
 static char tmp[MAXCMDLEN];
 static char buf[MAXCMDLEN];
-static timer_t timer = NULL;
+static head_t *hd;
 
 static inline char *regex_extract(char *str,regmatch_t *regMatch){
   static char buf[MAXSYSCALLNAME] = {0};
@@ -54,7 +47,7 @@ static inline char *regex_extract(char *str,regmatch_t *regMatch){
   return buf;
 }
 
-static inline void syscall_list_insert(head_t *hd,char *csys, double dur){
+static inline void syscall_list_insert(char *csys, double dur){
   node_t *elm;
   SLIST_FOREACH(elm,hd,field){
     if(strcmp(elm->syscall,csys)==0){
@@ -68,7 +61,7 @@ static inline void syscall_list_insert(head_t *hd,char *csys, double dur){
   SLIST_INSERT_HEAD(hd,elm,field);
 }
 
-static inline void statistics(head_t *hd){
+static inline void statistics(){
   node_t *elm;
   double tot = 0;
   double percentage;
@@ -81,8 +74,13 @@ static inline void statistics(head_t *hd){
   }
 }
 
-static void timer_function(){
-
+static void timer(int sig){
+  static int sec = 0;
+  if(sig == SIGALRM){
+    printf("----%ds----",++sec);
+    statistics();
+    alarm(1);
+  }
 }
 
 int main(int argc, char *argv[], char *envp[])
@@ -94,7 +92,6 @@ int main(int argc, char *argv[], char *envp[])
   char tmp[MAXCMDLEN];
   double duration;
   
-  head_t *hd;
   node_t *elm;
   size_t maxlen;
   ssize_t nreads;
@@ -129,8 +126,6 @@ int main(int argc, char *argv[], char *envp[])
   in = fdopen(pipes[0],"r");
   line = NULL;
 
-  timer = init_timer(&timer);
-  
   if((pid = fork()) == 0){
     close(pipes[0]);
     dup2(pipes[1],STDERR_FILENO);
@@ -143,14 +138,18 @@ int main(int argc, char *argv[], char *envp[])
     assert(0);
   }else{
     close(pipes[1]);
+    signal(SIGALRM,timer);
+    alarm(1);
     while((nreads = getline(&line,&maxlen,in)) != -1){
       if(regexec(&regexCompiled,line,MAXGROUPS,matchGroups,0) == 0){
         rtmp = regex_extract(line,&matchGroups[2]);
         duration = atof(rtmp);
         rtmp = regex_extract(line,&matchGroups[1]);
-        syscall_list_insert(hd,rtmp,duration);
+        syscall_list_insert(rtmp,duration);
       }
     }
+    signal(SIGALRM,SIG_DFL);
+    statistics();
   }
   return 0;
 }
