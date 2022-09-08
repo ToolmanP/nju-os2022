@@ -62,7 +62,7 @@ int main(int argc, char *argv[], char *envp[])
 
   if(pid == 0){
     close(fildes[0]);
-    dup2(fildes[1],STDERR_FILENO);
+    // dup2(fildes[1],STDERR_FILENO);
     ppath = strtok(exec_PATH,":");
     while(ppath){
       sprintf(argv[0],"%s/strace",ppath);
