@@ -62,20 +62,19 @@ int main(int argc, char *argv[], char *envp[])
     token = strtok(PATH,":");
     while(token){
       sprintf(exec_cmd,"%s/%s",token,argv[1]);
-      execve(argv[1],argv+1,envp);
       printf("%s\n\n",argv[1]);
-      
+      execve(argv[1],argv+1,envp);
       token = strtok(NULL,":");
     }
     assert(0);
   }else{
-    close(fildes[1]);
+    // close(fildes[1]);
     wait(NULL);
-    memset(buf,0,sizeof(buf));
-    while((nreads = read(fildes[0],buf,maxlen)) != 0){
-      printf("%s",buf);
-      memset(buf,0,sizeof(buf));
-    }
+    // memset(buf,0,sizeof(buf));
+    // while((nreads = read(fildes[0],buf,maxlen)) != 0){
+    //   printf("%s",buf);
+    //   memset(buf,0,sizeof(buf));
+    // }
   }
   // assert(argc>=2);
   // pipe(flides);
