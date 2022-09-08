@@ -40,31 +40,34 @@ static struct timeval timeout = {
 
 int main(int argc, char *argv[], char *envp[])
 { 
-  setbuf(stdout,NULL);
+
   int pid,fildes[2];
   char *PATH,*token,*program;
   char buf[MAXCMDLEN];
+
   size_t maxlen;
   ssize_t nreads;
 
   assert(argc>=2);
+
+  setbuf(stdout,NULL);
+  setbuf(stderr,NULL);
 
   if(pipe(fildes)>0)
     assert(0);
   
   PATH = getenv("PATH");
   maxlen = 4096;
-  program = argv[1];
-  argv[1] = exec_cmd;
-  
+  argv[0] = exec_cmd;
   pid = fork();
+
   if(pid == 0){
     close(fildes[0]);
     dup2(fildes[1],STDERR_FILENO);
     token = strtok(PATH,":");
     while(token){
-      sprintf(argv[1],"%s/%s",token,program);
-      execve(argv[1],argv+1,envp);
+      sprintf(argv[0],"%s/strace",token);
+      execve(argv[0],argv,envp);
       token = strtok(NULL,":");
     }
     assert(0);
