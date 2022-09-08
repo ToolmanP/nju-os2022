@@ -60,7 +60,7 @@ int main(int argc, char *argv[], char *envp[])
     //   execve(cmd,argv+1,envp);
     //   token = strtok(NULL,":");
     // }
-    execve(exec_argv[0],exec_argv,exec_envp);
+    execve(exec_argv[0],exec_argv,envp);
     assert(0);
   }else{
     wait(NULL);
