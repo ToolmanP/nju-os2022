@@ -66,13 +66,13 @@ int main(int argc, char *argv[], char *envp[])
     }
     assert(0);
   }else{
-    // close(fildes[1]);
-    // wait(NULL);
-    // memset(buf,0,sizeof(buf));
-    // while((nreads = read(fildes[0],buf,maxlen)) != 0){
-    //   printf("%s",buf);
-    //   memset(buf,0,sizeof(buf));
-    // }
+    close(fildes[1]);
+    wait(NULL);
+    memset(buf,0,sizeof(buf));
+    while((nreads = read(fildes[0],buf,maxlen)) != 0){
+      printf("%s",buf);
+      memset(buf,0,sizeof(buf));
+    }
   }
   // assert(argc>=2);
   // pipe(flides);
