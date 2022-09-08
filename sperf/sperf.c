@@ -33,6 +33,7 @@ typedef TAILQ_HEAD(head,node) head_t;
 
 static int flides[2];
 static char exec_cmd[MAXCMDLEN];
+static char exec_PATH[MAXCMDLEN];
 static struct timeval timeout = {
   .tv_sec = 1,
   .tv_usec = 0
@@ -54,7 +55,7 @@ int main(int argc, char *argv[], char *envp[])
   if(pipe(fildes)>0)
     assert(0);
   
-  PATH = getenv("PATH");
+  strcpy(exec_PATH,getenv("PATH"));
   maxlen = 4096;
   argv[0] = exec_cmd;
   pid = fork();
@@ -62,9 +63,7 @@ int main(int argc, char *argv[], char *envp[])
   if(pid == 0){
     close(fildes[0]);
     // dup2(fildes[1],STDERR_FILENO);
-    token = strtok(PATH,":");
-    // for(char **env = envp;*env;env++)
-    //   printf("env: %s\n",*env);
+    token = strtok(exec_PATH,":");
     while(token){
       sprintf(argv[0],"%s/strace",token);
       execve(argv[0],argv,envp);
