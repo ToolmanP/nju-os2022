@@ -24,10 +24,11 @@ assert(0);\
 #endif
 #define MAXCMDLEN 4096
 #define MAXARGS 1024
+#define MAXSYSCALLNAME 64
 #define MAXGROUPS 3
 typedef struct node{
-  char cmd[MAXCMDLEN];
-  float duration;
+  char syscall[MAXSYSCALLNAME];
+  double duration;
   TAILQ_ENTRY(node) nodes;
 } node_t;
 typedef TAILQ_HEAD(head,node) head_t;
@@ -41,12 +42,22 @@ static char *exec_argv[MAXCMDLEN];
 static char tmp[MAXCMDLEN];
 static char buf[MAXCMDLEN];
 
+static inline char *regex_extract(char *str,regmatch_t *regMatch){
+  static char buf[MAXSYSCALLNAME];
+  char tmp = *(str+regMatch->rm_eo);
+  *(str+regMatch->rm_eo) = 0;
+  strcpy(buf,(str+regMatch->rm_so));
+  *(str+regMatch->rm_eo) = tmp;
+  return buf;
+}
+
 int main(int argc, char *argv[], char *envp[])
 { 
 
   int pid,pipes[2],reti,i;
   char *line,*ppath;
   char **pexec_arg,**parg;
+  char *tmp;
   size_t maxlen;
   ssize_t nreads;
   regex_t regexCompiled;
@@ -64,7 +75,8 @@ int main(int argc, char *argv[], char *envp[])
   maxlen = 4096;
   exec_argv[0] = exec_cmd;
   exec_argv[1] = "-T";
-
+  in = fdopen(pipes[0],"r");
+  line = NULL;
   for(pexec_arg=exec_argv+2,parg=argv+1;*parg;pexec_arg++,parg++)
     *pexec_arg=*parg;
 
@@ -87,17 +99,10 @@ int main(int argc, char *argv[], char *envp[])
     assert(0);
   }else{
     close(pipes[1]);
-    in = fdopen(pipes[0],"r");
-    line = NULL;
     while((nreads = getline(&line,&maxlen,in)) != -1){
       if(regexec(&regexCompiled,line,MAXGROUPS,matchGroups,0) == 0){
-        for(i=0;i<MAXGROUPS;i++){
-          if(matchGroups[i].rm_so == -1)
-            break;
-          strcpy(buf,line);
-          buf[matchGroups[i].rm_eo] = 0;
-          printf("%s\n",buf+matchGroups[i].rm_so);
-        }
+        tmp = regex_extract(line,matchGroups+1)
+        tmp = regex_extract(line,matchGroups+2);
       }
     }
   }
