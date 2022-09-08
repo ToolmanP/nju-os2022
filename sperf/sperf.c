@@ -45,7 +45,6 @@ int main(int argc, char *argv[], char *envp[])
   size_t maxlen;
   ssize_t nreads;
   FILE *out;
-
   assert(argc>=2);
 
   if(pipe(fildes)>0)
@@ -54,6 +53,7 @@ int main(int argc, char *argv[], char *envp[])
   PATH = getenv("PATH");
   maxlen = 4096;
   argv[1] = exec_cmd;
+  line = NULL;
   pid = fork();
   if(pid == 0){
     dup2(fildes[1],STDERR_FILENO);
