@@ -46,7 +46,7 @@ int main(int argc, char *argv[], char *envp[])
   char *PATH,*line,*ppath;
   size_t maxlen;
   ssize_t nreads;
-  FILE *out;
+  FILE *in;
 
   assert(argc>=2);
   setbuf(stdout,NULL);
@@ -71,11 +71,11 @@ int main(int argc, char *argv[], char *envp[])
     }
     assert(0);
   }else{
-    close(fildes[1]);
-    out = fdopen(fildes[0],"r");
-    while((nreads = getline(&line,&maxlen,out)) != -1){
-      printf("%s",line);
-    }
+    // close(fildes[1]);
+    // in = fdopen(fildes[0],"r");
+    // while((nreads = getline(&line,&maxlen,in)) != -1){
+    //   printf("%s",line);
+    // }
   }
   // assert(argc>=2);
   // pipe(flides);
