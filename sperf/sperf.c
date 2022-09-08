@@ -65,10 +65,10 @@ int main(int argc, char *argv[], char *envp[])
     }
     assert(0);
   }else{
-    out = fdopen(fildes[0],"r");
-    while((nreads = getline(&line,&maxlen,out)) != -1){
-      printf("%s",line);
-    }
+    // out = fdopen(fildes[0],"r");
+    // while((nreads = getline(&line,&maxlen,out)) != -1){
+    //   printf("%s",line);
+    // }
   }
   // assert(argc>=2);
   // pipe(flides);
