@@ -43,7 +43,7 @@ int main(int argc, char *argv[], char *envp[])
 { 
 
   int pid,fildes[2];
-  char *PATH,ppath;
+  char *PATH,*ppath;
   char buf[MAXCMDLEN];
   size_t maxlen;
   ssize_t nreads;
