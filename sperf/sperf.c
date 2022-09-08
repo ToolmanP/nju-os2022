@@ -67,8 +67,9 @@ int main(int argc, char *argv[], char *envp[])
   }else{
     wait(NULL);
     out = fdopen(fildes[0],"r");
-    while((nreads = getline(&line,&maxlen,out)) != -1)
+    while((nreads = getline(&line,&maxlen,out)) != -1){
       printf("%s",line);
+    }
   }
   // assert(argc>=2);
   // pipe(flides);
