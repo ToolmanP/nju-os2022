@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <malloc.h>
 #include <regex.h>
+#include <signal.h>
 #include <sys/queue.h>
 #include <sys/time.h>
 #include <sys/wait.h>
@@ -28,12 +29,15 @@ typedef struct node{
   float duration;
   TAILQ_ENTRY(node) nodes;
 } node_t;
-
 typedef TAILQ_HEAD(head,node) head_t;
 
 static int flides[2];
 static char *PATH = NULL;
 static char cmd[MAXCMDLEN];
+static struct timeval timeout = {
+  .tv_sec = 1,
+  .tv_usec = 0
+};
 
 int main(int argc, char *argv[], char *envp[])
 {
@@ -49,7 +53,7 @@ int main(int argc, char *argv[], char *envp[])
   argv[1] = cmd;
   pid = fork();
   if(pid == 0){
-    // dup2(fildes[1],STDERR_FILENO);
+    dup2(fildes[1],STDERR_FILENO);
     token = strtok(PATH,":");
     while(token){
       sprintf(cmd,"%s/%s",token,argv[1]);
@@ -58,7 +62,7 @@ int main(int argc, char *argv[], char *envp[])
     }
     assert(0);
   }else{
-    wait(NULL);
+    sigtimewa
   }
   // assert(argc>=2);
   // pipe(flides);
