@@ -41,7 +41,7 @@ static struct timeval timeout = {
 int main(int argc, char *argv[], char *envp[])
 {
   int pid,fildes[2];
-  char *PATH,*token,*line;
+  char *PATH,*token;
   // size_t maxlen;
   // ssize_t nreads;
   FILE *out;
