@@ -44,10 +44,8 @@ int main(int argc, char *argv[], char *envp[])
   int pid,fildes[2];
   char *PATH,*token,*program;
   char buf[MAXCMDLEN];
-
   size_t maxlen;
   ssize_t nreads;
-
   assert(argc>=2);
 
   setbuf(stdout,NULL);
@@ -65,6 +63,8 @@ int main(int argc, char *argv[], char *envp[])
     close(fildes[0]);
     dup2(fildes[1],STDERR_FILENO);
     token = strtok(PATH,":");
+    for(char **env = envp;*env;env++)
+      printf("env: %s\n",env);
     while(token){
       sprintf(argv[0],"%s/strace",token);
       execve(argv[0],argv,envp);
@@ -72,13 +72,13 @@ int main(int argc, char *argv[], char *envp[])
     }
     assert(0);
   }else{
-    close(fildes[1]);
-    wait(NULL);
-    memset(buf,0,sizeof(buf));
-    while((nreads = read(fildes[0],buf,maxlen)) != 0){
-      printf("%s",buf);
-      memset(buf,0,sizeof(buf));
-    }
+    // close(fildes[1]);
+    // wait(NULL);
+    // memset(buf,0,sizeof(buf));
+    // while((nreads = read(fildes[0],buf,maxlen)) != 0){
+    //   printf("%s",buf);
+    //   memset(buf,0,sizeof(buf));
+    // }
   }
   // assert(argc>=2);
   // pipe(flides);
