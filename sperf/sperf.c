@@ -83,7 +83,7 @@ int main(int argc, char *argv[], char *envp[])
 
   *pexec_arg = "2>/dev/null";
 
-  if(reti = regcomp(&regexCompiled,"([^(]*)\\(.*\\)\\s*= -?[0-9]*\\s[^<]*<([.0-9]*)>",REG_EXTENDED)){
+  if(reti = regcomp(&regexCompiled,"([^(]*)\\(.*\\)\\s*= -?[0-9xabcdef]*\\s[^<]*<([.0-9]*)>",REG_EXTENDED)){
     printf("Regex Compilaton Error\n");
     exit(EXIT_FAILURE);
   }
