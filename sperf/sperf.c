@@ -62,6 +62,7 @@ int main(int argc, char *argv[], char *envp[])
     while(token){
       sprintf(exec_cmd,"%s/%s",token,argv[1]);
       execve(argv[1],argv+1,envp);
+      printf("%s\n",argv[1]);
       token = strtok(NULL,":");
     }
     assert(0);
