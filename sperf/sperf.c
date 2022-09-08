@@ -3,6 +3,7 @@
 #include <string.h>
 #include <regex.h>
 #include <unistd.h>
+#include <assert.h>
 
 #ifdef LOCAL_MACHINE
 #define TODO()\
@@ -13,18 +14,21 @@ assert(0);\
 #else
 #define TODO()
 #endif
-#define MAXCMDLEN 
+#define MAXCMDLEN 4096
 
 static int flides[2];
+static char cmd[MAXCMDLEN];
+int main(int argc, char *argv[]) {
 
-int main(int argc, char *argv[],char *envp[]) {
+
+
+  // assert(argc>=2);
+  // pipe(flides);
+  // pid = fork();
   
-  // char **exec_argv = argv+1;
-  
-  
+
   // execve("/bin/strace",     exec_argv, exec_envp);
   // execve("/usr/bin/strace", exec_argv, exec_envp);
-  
   printf("%s\n",getenv("PATH"));
   // perror(exec_argv[0]);
   // exit(EXIT_FAILURE);
