@@ -42,8 +42,8 @@ int main(int argc, char *argv[], char *envp[])
 {
   int pid,fildes[2];
   char *PATH,*token,*line;
-  size_t maxlen;
-  ssize_t nreads;
+  // size_t maxlen;
+  // ssize_t nreads;
   FILE *out;
   assert(argc>=2);
 
