@@ -40,7 +40,7 @@ static struct timeval timeout = {
 
 int main(int argc, char *argv[], char *envp[])
 { 
-  setbuf(NULL);
+  setbuf(stdout,NULL);
   int pid,fildes[2];
   char *PATH,*token;
   char buf[4096] = {0};
