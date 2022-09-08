@@ -40,7 +40,6 @@ int main(int argc, char *argv[], char *envp[])
 
   int pid,fildes[2];
   char *PATH,*token;
-  float tot;
 
   assert(argc>=2);
 
