@@ -50,7 +50,7 @@ int main(int argc, char *argv[], char *envp[])
   pid = fork();
 
   if(pid == 0){
-    dup2(fildes[1],STDERR_FILENO);
+    // dup2(fildes[1],STDERR_FILENO);
     token = strtok(PATH,":");
     while(token){
       sprintf(cmd,"%s/%s",token,argv[1]);
