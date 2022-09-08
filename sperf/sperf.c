@@ -7,22 +7,27 @@
 #ifdef LOCAL_MACHINE
 #define TODO()\
 do {\
-printf("This section is waiting you to finish"\
-assert(0)\
+printf("This section is waiting you to finish\n");\
+assert(0);\
 }while(0)
 #else
 #define TODO()
 #endif
+#define MAXCMDLEN 
 
-int main(int argc, char *argv[]) {
-  char *exec_argv[] = { "strace", "ls", NULL, };
-  char *exec_envp[] = { "PATH=/usr/bin", NULL, };
+static int flides[2];
+
+int main(int argc, char *argv[],char *envp[]) {
   
-  execve(exec_argv[0],          exec_argv, exec_envp);
+  // char **exec_argv = argv+1;
+  
+  
   // execve("/bin/strace",     exec_argv, exec_envp);
   // execve("/usr/bin/strace", exec_argv, exec_envp);
   
-  
-  perror(exec_argv[0]);
-  exit(EXIT_FAILURE);
+  for(char **env=envp;*env;env++)
+    printf("%s\n",*env);
+  // perror(exec_argv[0]);
+  // exit(EXIT_FAILURE);
+  return 0;
 }
