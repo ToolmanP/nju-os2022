@@ -47,7 +47,6 @@ int main(int argc, char *argv[], char *envp[])
     assert(0);
   
   PATH = getenv("PATH");
-  tot = 0;
   pid = fork();
 
   if(pid == 0){
