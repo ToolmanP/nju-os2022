@@ -43,12 +43,12 @@ int main(int argc, char *argv[], char *envp[])
 { 
 
   int pid,fildes[2];
-  char *PATH,*token,*program;
+  char *PATH,ppath;
   char buf[MAXCMDLEN];
   size_t maxlen;
   ssize_t nreads;
-  assert(argc>=2);
 
+  assert(argc>=2);
   setbuf(stdout,NULL);
   setbuf(stderr,NULL);
 
@@ -62,22 +62,22 @@ int main(int argc, char *argv[], char *envp[])
 
   if(pid == 0){
     close(fildes[0]);
-    // dup2(fildes[1],STDERR_FILENO);
-    token = strtok(exec_PATH,":");
-    while(token){
-      sprintf(argv[0],"%s/strace",token);
+    dup2(fildes[1],STDERR_FILENO);
+    ppath = strtok(exec_PATH,":");
+    while(ppath){
+      sprintf(argv[0],"%s/strace",ppath);
       execve(argv[0],argv,envp);
-      token = strtok(NULL,":");
+      ppath = strtok(NULL,":");
     }
     assert(0);
   }else{
-    // close(fildes[1]);
-    // wait(NULL);
-    // memset(buf,0,sizeof(buf));
-    // while((nreads = read(fildes[0],buf,maxlen)) != 0){
-    //   printf("%s",buf);
-    //   memset(buf,0,sizeof(buf));
-    // }
+    close(fildes[1]);
+    wait(NULL);
+    memset(buf,0,sizeof(buf));
+    while((nreads = read(fildes[0],buf,maxlen)) != 0){
+      printf("%s",buf);
+      memset(buf,0,sizeof(buf));
+    }
   }
   // assert(argc>=2);
   // pipe(flides);
