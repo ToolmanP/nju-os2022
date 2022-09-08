@@ -57,7 +57,8 @@ int main(int argc, char *argv[], char *envp[])
   int pid,pipes[2],reti,i;
   char *line,*ppath;
   char **pexec_arg,**parg;
-  char *tmp;
+  char tmp[MAXCMDLEN];
+  char *rtmp;
   size_t maxlen;
   ssize_t nreads;
   regex_t regexCompiled;
@@ -101,10 +102,10 @@ int main(int argc, char *argv[], char *envp[])
     close(pipes[1]);
     while((nreads = getline(&line,&maxlen,in)) != -1){
       if(regexec(&regexCompiled,line,MAXGROUPS,matchGroups,0) == 0){
-        tmp = regex_extract(line,matchGroups+1);
-        printf("%s\n",tmp);
-        tmp = regex_extract(line,matchGroups+2);
-        printf("%s\n",tmp);
+        rtmp = regex_extract(line,&matchGroups[1]);
+        printf("%s\n",rtmp);
+        rtmp = regex_extract(line,&matchGroups[2]);
+        printf("%s\n",rtmp);
       }
     }
   }
