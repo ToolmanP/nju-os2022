@@ -32,8 +32,7 @@ typedef struct node{
 typedef TAILQ_HEAD(head,node) head_t;
 
 static int flides[2];
-static char *PATH = NULL;
-static char cmd[MAXCMDLEN];
+static char exec_cmd[MAXCMDLEN];
 static struct timeval timeout = {
   .tv_sec = 1,
   .tv_usec = 0
@@ -42,7 +41,10 @@ static struct timeval timeout = {
 int main(int argc, char *argv[], char *envp[])
 {
   int pid,fildes[2];
-  char *PATH,*token;
+  char *PATH,*token,*line;
+  size_t maxlen;
+  ssize_t nreads;
+  FILE *out;
 
   assert(argc>=2);
 
@@ -50,19 +52,23 @@ int main(int argc, char *argv[], char *envp[])
     assert(0);
   
   PATH = getenv("PATH");
-  argv[1] = cmd;
+  len = 4096;
+  argv[1] = exec_cmd;
   pid = fork();
   if(pid == 0){
     dup2(fildes[1],STDERR_FILENO);
     token = strtok(PATH,":");
     while(token){
-      sprintf(cmd,"%s/%s",token,argv[1]);
+      sprintf(exec_cmd,"%s/%s",token,argv[1]);
       execve(argv[1],argv+1,envp);
       token = strtok(NULL,":");
     }
     assert(0);
   }else{
-    sigtimewa
+    wait(NULL);
+    out = fdopen(fildes[0],"r");
+    while((nreads = getline(&line,&maxlen,out)) != -1)
+      printf("%s",line);
   }
   // assert(argc>=2);
   // pipe(flides);
