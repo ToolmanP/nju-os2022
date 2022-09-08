@@ -43,6 +43,7 @@ int main(int argc, char *argv[], char *envp[])
   setbuf(stdout,NULL);
   int pid,fildes[2];
   char *PATH,*token,*program;
+  char buf[MAXCMDLEN];
   size_t maxlen;
   ssize_t nreads;
 
@@ -68,13 +69,13 @@ int main(int argc, char *argv[], char *envp[])
     }
     assert(0);
   }else{
-    // close(fildes[1]);
+    close(fildes[1]);
     wait(NULL);
-    // memset(buf,0,sizeof(buf));
-    // while((nreads = read(fildes[0],buf,maxlen)) != 0){
-    //   printf("%s",buf);
-    //   memset(buf,0,sizeof(buf));
-    // }
+    memset(buf,0,sizeof(buf));
+    while((nreads = read(fildes[0],buf,maxlen)) != 0){
+      printf("%s",buf);
+      memset(buf,0,sizeof(buf));
+    }
   }
   // assert(argc>=2);
   // pipe(flides);
