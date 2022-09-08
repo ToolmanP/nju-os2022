@@ -5,7 +5,7 @@
 #include <unistd.h>
 
 #ifdef LOCAL_MACHINE
-#define TODO()\ 
+#define TODO()\
 do {\
 printf("This section is waiting you to finish"\
 assert(0)\
