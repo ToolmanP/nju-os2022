@@ -52,7 +52,7 @@ int main(int argc, char *argv[], char *envp[])
     assert(0);
   
   PATH = getenv("PATH");
-  len = 4096;
+  maxlen = 4096;
   argv[1] = exec_cmd;
   pid = fork();
   if(pid == 0){
