@@ -138,7 +138,7 @@ int main(int argc, char *argv[], char *envp[])
     assert(0);
   }else{
     close(pipes[1]);
-    wait(pid);
+    wait(NULL);
     while((nreads = getline(&line,&maxlen,in)) != -1){
       printf("%s",line);
       // if(regexec(&regexCompiled,line,MAXGROUPS,matchGroups,0) == 0){
