@@ -127,7 +127,7 @@ int main(int argc, char *argv[], char *envp[])
   line = NULL;
 
   if((pid = fork()) == 0){
-    nullfd = open("/dev/null","w");
+    nullfd = open("/dev/null",O_WRONLY);
     close(pipes[0]);
     dup2(pipes[1],STDERR_FILENO);
     dup2(nullfd,STDOUT_FILENO);
