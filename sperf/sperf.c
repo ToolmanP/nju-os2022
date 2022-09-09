@@ -155,7 +155,7 @@ int main(int argc, char *argv[], char *envp[])
     printf("Finally:\n");
     statistics();
     for(i=0;i<80;i++)
-      printf("\0");
+      putc('\0',stdout);
   }
   return 0;
 }
