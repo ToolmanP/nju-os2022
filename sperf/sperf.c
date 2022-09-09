@@ -8,7 +8,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/queue.h>
-#include <sys/wait.h>
+
 #ifdef LOCAL_MACHINE
 #define TODO()\
 do {\
