@@ -81,6 +81,7 @@ static void timer(int sig){
     printf("Time: %ds\n",++sec);
     statistics();
     alarm(1);
+    printf("=============\n");
   }
 }
 
