@@ -139,15 +139,14 @@ int main(int argc, char *argv[], char *envp[])
     close(pipes[1]);
     wait(NULL);
     while((nreads = getline(&line,&maxlen,in)) != -1){
-      printf("%s",line);
-      // if(regexec(&regexCompiled,line,MAXGROUPS,matchGroups,0) == 0){
-      //   rtmp = regex_extract(line,&matchGroups[2]);
-      //   duration = atof(rtmp);
-      //   rtmp = regex_extract(line,&matchGroups[1]);
-      //   syscall_list_insert(rtmp,duration);
-      // }
+      if(regexec(&regexCompiled,line,MAXGROUPS,matchGroups,0) == 0){
+        rtmp = regex_extract(line,&matchGroups[2]);
+        duration = atof(rtmp);
+        rtmp = regex_extract(line,&matchGroups[1]);
+        syscall_list_insert(rtmp,duration);
+      }
     }
-    // statistics();
+    statistics();
   }
   return 0;
 }
