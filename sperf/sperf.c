@@ -86,7 +86,7 @@ static void timer(int sig){
 int main(int argc, char *argv[], char *envp[])
 { 
 
-  int pid,pipes[2],reti,i;
+  int pid,pipes[2],reti,i,nullfd;
   char *line,*ppath,*rtmp;
   char **pexec_arg,**parg;
   char tmp[MAXCMDLEN];
@@ -126,8 +126,10 @@ int main(int argc, char *argv[], char *envp[])
   line = NULL;
 
   if((pid = fork()) == 0){
+    nullfd = open("/dev/null","w");
     close(pipes[0]);
     dup2(pipes[1],STDERR_FILENO);
+    dup2(nullfd,STDOUT_FILENO);
     ppath = strtok(tmp,":");
     while(ppath){
       sprintf(exec_argv[0],"%s/strace",ppath);
