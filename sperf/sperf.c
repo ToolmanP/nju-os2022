@@ -113,7 +113,7 @@ int main(int argc, char *argv[], char *envp[])
 
   for(pexec_arg=exec_argv+2,parg=argv+1;*parg;pexec_arg++,parg++)
     *pexec_arg=*parg;
-
+  
   if(reti = regcomp(&regexCompiled,"([^(]*)\\(.*\\)\\s*=\\s-??[0-9a-fx]*\\s[^<]*<([.0-9]*)>",REG_EXTENDED)){
     printf("Regex Compilaton Error\n");
     exit(EXIT_FAILURE);
@@ -137,7 +137,8 @@ int main(int argc, char *argv[], char *envp[])
     assert(0);
   }else{
     close(pipes[1]);
-    wait(NULL);
+    signal(SIGALRM,timer);
+    alarm(1);
     while((nreads = getline(&line,&maxlen,in)) != -1){
       if(regexec(&regexCompiled,line,MAXGROUPS,matchGroups,0) == 0){
         rtmp = regex_extract(line,&matchGroups[2]);
