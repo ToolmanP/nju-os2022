@@ -78,7 +78,7 @@ static inline void statistics(){
 static void timer(int sig){
   static int sec = 0;
   if(sig == SIGALRM){
-    printf("----%ds----",++sec);
+    printf("Time: %ds\n",++sec);
     statistics();
     alarm(1);
   }
