@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <malloc.h>
 #include <regex.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <sys/queue.h>
 #include <sys/wait.h>
