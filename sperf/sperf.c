@@ -138,16 +138,17 @@ int main(int argc, char *argv[], char *envp[])
     assert(0);
   }else{
     close(pipes[1]);
-    wait(NULL);
+    wait(pid);
     while((nreads = getline(&line,&maxlen,in)) != -1){
-      if(regexec(&regexCompiled,line,MAXGROUPS,matchGroups,0) == 0){
-        rtmp = regex_extract(line,&matchGroups[2]);
-        duration = atof(rtmp);
-        rtmp = regex_extract(line,&matchGroups[1]);
-        syscall_list_insert(rtmp,duration);
-      }
+      printf("%s",line);
+      // if(regexec(&regexCompiled,line,MAXGROUPS,matchGroups,0) == 0){
+      //   rtmp = regex_extract(line,&matchGroups[2]);
+      //   duration = atof(rtmp);
+      //   rtmp = regex_extract(line,&matchGroups[1]);
+      //   syscall_list_insert(rtmp,duration);
+      // }
     }
-    statistics();
+    // statistics();
   }
   return 0;
 }
