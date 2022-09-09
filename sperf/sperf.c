@@ -48,7 +48,7 @@ static inline char *regex_extract(char *str,regmatch_t *regMatch){
   return buf;
 }
 
-static inline void syscall_list_insert(char *csys, double dur){
+static inline void syscall_list_update(char *csys, double dur){
   node_t *elm;
   SLIST_FOREACH(elm,hd,field){
     if(strcmp(elm->syscall,csys)==0){
@@ -148,7 +148,7 @@ int main(int argc, char *argv[], char *envp[])
         rtmp = regex_extract(line,&matchGroups[2]);
         duration = atof(rtmp);
         rtmp = regex_extract(line,&matchGroups[1]);
-        syscall_list_insert(rtmp,duration);
+        syscall_list_update(rtmp,duration);
       }
     }
     signal(SIGALRM,SIG_DFL);
