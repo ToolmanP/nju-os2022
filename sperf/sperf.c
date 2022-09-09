@@ -153,6 +153,8 @@ int main(int argc, char *argv[], char *envp[])
     }
     signal(SIGALRM,SIG_DFL);
     statistics();
+    for(i=0;i<80;i++)
+      printf("\0");
   }
   return 0;
 }
