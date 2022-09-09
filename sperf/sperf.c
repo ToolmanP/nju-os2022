@@ -152,6 +152,7 @@ int main(int argc, char *argv[], char *envp[])
       }
     }
     signal(SIGALRM,SIG_DFL);
+    printf("Finally:")
     statistics();
     for(i=0;i<80;i++)
       printf("\0");
