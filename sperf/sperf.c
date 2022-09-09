@@ -147,6 +147,7 @@ int main(int argc, char *argv[], char *envp[])
         syscall_list_insert(rtmp,duration);
       }
     }
+    signal(SIGALRM,SIG_DFL);
     statistics();
   }
   return 0;
