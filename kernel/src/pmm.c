@@ -7,6 +7,14 @@ static int locked = 0;
 static arena_t arenas[MAXCPUS];
 static int _pmm_lock = 0;
 
+static inline int xchg(int *addr, int val);
+static inline void xchg_lock();
+static inline void xchg_unlock();
+static inline void bmap_init(size_t size);
+static inline int bmap_getbit(int x);
+static inline void bmap_setbit(int x);
+static inline void bmap_clearbit(int x);
+
 static inline int xchg(int *addr, int val)
 {
   int result;
@@ -139,7 +147,7 @@ static inline slab_t *fetch_free_slab(slab_t **free)
   return free_slab;
 }
 
-static inline void shard_init(shard_t *shard,int i)
+static inline void shard_init(shard_t *shard)
 {
   shard->pg = pgalloc();
   shard->shard_base = pgalloc();
@@ -148,12 +156,9 @@ static inline void shard_init(shard_t *shard,int i)
 
 static inline void arena_init(arena_t *arena)
 {
-  for(int i=0;i<PGBITS;i++){
-    
-  }
+  for(int i=0;i<PGBITS;i++)
+    shard_init(&arena->shards[i]);
 }
-
-
 
 static void *kalloc(size_t size)
 {
