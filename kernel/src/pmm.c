@@ -1,5 +1,7 @@
 #include <common.h>
 
+static void *_sbrk = 0;
+
 static void *kalloc(size_t size) {
   return NULL;
 }
