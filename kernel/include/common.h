@@ -8,7 +8,7 @@
 #define BITMAPLEVELS 18
 #define BITMAPMAX 1<<BITMAPLEVELS
 #define MALLOCMAX 1<<24
-#define MALLOC_FAILURE (uintptr_t)-1
+#define MALLOC_FAILURE ((uintptr_t)-1)
 
 #define lch(x) (x<<1ul)
 #define rch(x) ((x<<1ul)|1ul)
