@@ -158,7 +158,7 @@ static inline void arena_init(arena_t *arena)
 static void *kalloc(size_t size)
 {
   if(size>MALLOCMAX || size == 0)
-    return MALLOC_FAILURE;
+    return (void *)MALLOC_FAILURE;
 
   int power = power_round(size);
 
