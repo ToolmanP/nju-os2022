@@ -2,6 +2,10 @@
 
 static void *_sbrk = 0;
 
+static void *kalloc_fast_path(size_t size){
+
+}
+
 static void *kalloc(size_t size) {
   return NULL;
 }
