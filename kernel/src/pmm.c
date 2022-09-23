@@ -206,10 +206,10 @@ static inline slab_t *pmm_shard_allocate_new_slab(shard_t *shard, int nbits)
 
 static inline void pmm_arena_insert_allocated_slab(arena_t *arena, slab_t *slab)
 {
-  _pmm_spin_lock(arena->_al_lock);
+  _pmm_spin_lock(&arena->_al_lock);
   slab->next = arena->allocated;
   arena->allocated = slab;
-  _pmm_spin_unlock(arena->_al_lock);
+  _pmm_spin_unlock(&arena->_al_lock);
 }
 
 static inline slab_t *pmm_arena_fetch_free_slab(int nbits,int cpuid)
