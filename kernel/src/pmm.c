@@ -318,7 +318,7 @@ static void kfree(void *ptr)
   assert(IN_RANGE(ptr,heap));
   int cpuid = cpu_current();
   
-  if((uintptr_t) ptr & (PGSIZE-1) == 0)
+  if(((uintptr_t) ptr & (PGSIZE-1)) == 0)
     kfree_slow(ptr,cpuid);
   else
     kfree_fast(ptr,cpuid);
