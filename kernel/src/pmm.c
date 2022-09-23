@@ -257,7 +257,6 @@ static inline slab_t *pmm_arena_search_allocated_slab(arena_t *arena, void *ptr)
 static inline void pmm_arena_free_slab(void *ptr,int cpuid)
 {
   slab_t *slab;
-  shard_t *shard;
 
   if((slab = pmm_arena_search_allocated_slab(&arenas[cpuid],ptr)) != NULL)
       goto free;
