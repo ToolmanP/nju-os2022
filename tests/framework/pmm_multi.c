@@ -12,7 +12,4 @@ typedef struct _list{
     int len;
 } list_t;
 
-static inline void insert_list(void *ptr)
-{
-    
-}
+

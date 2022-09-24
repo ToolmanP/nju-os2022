@@ -41,7 +41,6 @@ static inline void *op_free()
         return (void *)-1;
     int pos = rand()%(li->len);
     void *ptr = delete_list(pos);
-    printf("%p\n",ptr);
     pmm->free(ptr);
     return ptr;
 }
