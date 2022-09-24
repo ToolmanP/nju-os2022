@@ -32,8 +32,7 @@ static inline void *delete_list(int pos)
 {
     node_t **curr = &list;
     void *ptr;
-    int i;
-    for(i=0;i<pos;i++){
+    for(int i=0;i<pos;i++){
         curr = &((*curr)->next);
     }
         
@@ -55,14 +54,9 @@ static inline void *op_free()
 
     if(len == 0)
         return (void *)-1;
-    printf("begin op_free\n");
     int pos = rand()%len;
-    printf("pos: %d len: %d\n",pos,len);
     void *ptr = delete_list(pos);
-   
-    printf("ptr: %p\n",ptr);
     pmm->free(ptr);
-    printf("end of op_free\n");
     return ptr;
 }
 
