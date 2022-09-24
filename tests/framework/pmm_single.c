@@ -35,11 +35,10 @@ static inline void *delete_list(int pos)
     node_t *entry;
     void *ptr;
     printf("1\n");
-    for(i=0;i<pos;i++)
+    for(i=0;i<=pos;i++)
     {
         entry = *curr;
         curr = &(entry->next);
-        printf("entry: %p\n",entry);
     }
     printf("2\n");
     printf("%p %p\n",curr,entry);
