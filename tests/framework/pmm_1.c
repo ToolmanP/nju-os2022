@@ -11,6 +11,8 @@ int _pmm_nbits_round(size_t size);
 static inline void test()
 {
   printf("%d\n",_pmm_nbits_round(4096));
+  void *ptr = pmm->alloc(4096);
+  printf("%p\n",ptr);
 }
 
 int main() {
