@@ -24,6 +24,7 @@ static __always_inline inline void single_thread_stress_test(int ntimes)
 int main(const char *args)
 {   
     int ntimes = atoi(args);
+    printf("%d\n",ntimes);
     srand(time(NULL));
     os->init();
     single_thread_stress_test(ntimes);
