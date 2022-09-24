@@ -41,6 +41,7 @@ static inline void *delete_list(int pos)
         curr = &(entry->next);
     }
     printf("2\n");
+    assert(curr != NULL);
     *curr = entry->next;
     printf("3\n");
     ptr = entry->ptr;
