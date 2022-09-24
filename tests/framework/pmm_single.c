@@ -2,45 +2,32 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <execinfo.h>
 
-#include <sys/queue.h>
 #include <time.h>
 #include <common.h>
 #include <klib.h>
 #include <malloc.h>
 
-typedef struct _node {
-    void *ptr;
-    struct _node *next;
-} node_t;
+#include "list.h"
 
-
-node_t *list;
-int len = 0;
+LIST_TYPE_DEFINE(void *);
+LIST_DEFINE(li);
+HEAD_DEFINE(hd);
 
 static inline void insert_list(void *ptr)
 {
     node_t *node = malloc(sizeof(node_t));
-    node->ptr = ptr;
-    node->next = list;
-    list = node;
-    len++;
+    NODE_INIT(node,ptr);
+    LIST_INSERT(li,node);
 }
 
 static inline void *delete_list(int pos)
 {
-    node_t *entry = NULL;
-    node_t **curr = &list;
-    void *ptr;
-    for(int i=0;i<pos;i++)
-        curr = &((*curr)->next);
-    entry = *curr;
-    ptr = entry->ptr;
-    *curr = entry->next;
-    len--;
-    free(entry);
-    return ptr; 
+    node_t *node;
+    LIST_DELETE_POS(li,pos,node);
+    if(node==NULL)
+        return (void *)-1;
+    return node->elm;
 }
 
 static inline void *op_alloc(int sz)
@@ -52,12 +39,12 @@ static inline void *op_alloc(int sz)
 
 static inline void *op_free()
 {   
-
-    if(len == 0)
-        return (void *)-1;
-    int pos = rand()%len;
+    int pos = rand()%(li->len);
     void *ptr = delete_list(pos);
+    if(ptr == (void *)-1)
+        goto finished;
     pmm->free(ptr);
+finished:
     return ptr;
 }
 
@@ -81,9 +68,9 @@ static void single_thread_stress_test(int ntimes)
 int main(const char *args)
 {   
     int ntimes = atoi(args);
-    list = malloc(sizeof(node_t));
-    list -> ptr = NULL;
-    list -> next = NULL;
+    NODE_INIT(hd,NULL);
+    LIST_INIT(li,hd);
+
     srand(time(NULL));
     os->init();
     single_thread_stress_test(ntimes);
