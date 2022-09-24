@@ -16,7 +16,7 @@ typedef struct _list {
 
 typedef SLIST_HEAD(_list_head,_list) head_t;
 
-static __always_inline void single_thread_stress_test(int ntimes)
+static __always_inline inline void single_thread_stress_test(int ntimes)
 {
     
 }
