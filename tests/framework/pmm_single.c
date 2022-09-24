@@ -52,15 +52,15 @@ static inline void *op_alloc(int sz)
 static inline void *op_free()
 {   
 
-    printf("op_free\n");
     if(len == 0)
         return (void *)-1;
-
+    printf("begin op_free\n");
     int pos = rand()%len;
     printf("pos: %d len: %d\n",pos,len);
     void *ptr = delete_list(pos);
-    pmm->free(ptr);
+   
     printf("ptr: %p\n",ptr);
+    pmm->free(ptr);
     printf("end of op_free\n");
     return ptr;
 }
