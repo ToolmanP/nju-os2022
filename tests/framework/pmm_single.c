@@ -66,7 +66,7 @@ static void single_thread_stress_test(int ntimes)
     void *ptr;
     while(ntimes--){
         if((rand() % 2) == 0){
-            printf("A,%p\n",op_alloc((rand() % MALLOCMAX)+1));
+            printf("A,%p\n",op_alloc((rand() % 256)+1));
         }else{
             ptr = op_free();
             if(ptr == (void *)-1)
