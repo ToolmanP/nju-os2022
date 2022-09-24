@@ -24,6 +24,7 @@ static inline void insert_list(void *ptr)
     node_t *node = malloc(sizeof(node_t));
     node->ptr = ptr;
     node->next = list;
+    list = node;
     len++;
 }
 
