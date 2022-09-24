@@ -32,6 +32,7 @@ static inline void *delete_list(int pos)
 {
     node_t *entry = NULL;
     node_t **curr = &list;
+    assert(len>pos);
     for(int i=0;i<=pos;i++)
         curr = &((*curr)->next);
     assert(*curr != NULL);
@@ -39,8 +40,8 @@ static inline void *delete_list(int pos)
     assert(entry != NULL);
     void *ptr = entry->ptr;
     *curr = entry->next;
-    printf("ptr:%p\n",ptr);
     len--;
+    printf("ptr:%p\n",ptr);
     return ptr; 
 }
 
