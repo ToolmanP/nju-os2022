@@ -31,16 +31,14 @@ static inline void insert_list(void *ptr)
 static inline void *delete_list(int pos)
 {
     node_t **curr = &list;
-    node_t *node;
+    void *ptr;
     int i;
     for(i=0;i<pos;i++)
         curr = &((*curr)->next);
-    
-    printf("%p",*curr);
-    node = *curr;
-    *curr = node->next;
+    ptr = (*curr)->ptr;
+    *curr = (*curr)->next;
     len--;
-    return node->ptr;
+    return ptr;
 }
 
 static inline void *op_alloc(int sz)
