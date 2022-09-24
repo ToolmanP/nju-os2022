@@ -17,7 +17,7 @@ typedef struct _node {
 
 
 node_t *list;
-int len;
+int len = 0;
 
 static inline void insert_list(void *ptr)
 {
@@ -31,7 +31,7 @@ static inline void insert_list(void *ptr)
 static inline void *delete_list(int pos)
 {
     node_t **curr = &list;
-    printf("delete: %p\n",list->ptr);
+    assert(*curr != NULL);
     void *ptr;
     int i;
     printf("delete_list\n");
