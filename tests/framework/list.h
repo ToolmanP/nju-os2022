@@ -61,7 +61,7 @@ do{\
         node = NULL;\
         break;\
     }\
-    for(int i=0;i<pos;i++){\
+    for(int i=0;i<=pos;i++){\
         curr = &((*curr)->next);\
     }\
     node = *curr;\
