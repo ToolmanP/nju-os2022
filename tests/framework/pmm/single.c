@@ -24,8 +24,9 @@ static inline void *delete_list(int pos)
 {
     node_t *node;
     LIST_DELETE_POS(li,pos,node);
+    void *ret = node->elm;
     free(node);
-    return node->elm;
+    return ret;
 }
 
 static inline void *op_alloc(int sz)
