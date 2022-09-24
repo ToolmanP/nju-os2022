@@ -20,6 +20,6 @@ static inline void smoke_test()
 int main() {
   os->init();
   // mpe_init(os->run);
-  test();
+  smoke_test();
   return 0;
 }
