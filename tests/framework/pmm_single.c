@@ -5,12 +5,10 @@
 
 #include <sys/queue.h>
 #include <time.h>
-#include <assert.h>
-
 #include <common.h>
 #include <klib.h>
 
-#define __always_inline inline __attribute__((always_inline))
+
 typedef struct _list {
     void *ptr;
     SLIST_ENTRY(_list);
