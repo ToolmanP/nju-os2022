@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <execinfo.h>
+
 #include <sys/queue.h>
 #include <time.h>
 #include <common.h>
@@ -30,11 +32,13 @@ static inline void *op_alloc(int sz)
 
 static inline void *op_free()
 {   
+    printf("Op free\n");
     if(len == 0)
         return (void *)-1;
 
     int pos = rand()%len;
-    node_t *elm;
+    node_t *elm = NULL;
+
     SLIST_FOREACH(elm,alloc_hd,field){
         if(pos--==0)
             break;
