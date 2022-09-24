@@ -33,6 +33,7 @@ static inline void *op_alloc(int sz)
 static inline void *op_free()
 {   
 
+    printf("op_free\n");
     if(len == 0)
         return (void *)-1;
 
@@ -47,6 +48,7 @@ static inline void *op_free()
     SLIST_REMOVE(alloc_hd,elm,_node,field);
     len--;
     pmm->free(elm->ptr);
+    printf("end of op_free\n");
     return elm->ptr;
 }
 
