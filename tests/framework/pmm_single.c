@@ -30,7 +30,7 @@ static inline void insert_list(void *ptr)
 
 static inline void *delete_list(int pos)
 {
-    node_t *entry = list;
+    node_t *entry = NULL;
     node_t **curr = &list;
     assert(len>=pos);
     for(int i=0;i<pos;i++)
@@ -39,10 +39,11 @@ static inline void *delete_list(int pos)
     assert(*curr != NULL);
     entry = *curr;
     assert(entry != NULL);
-    printf("%p %p\n",entry,curr);
+    printf("curr: %p\n");
     void *ptr = entry->ptr;
     *curr = entry->next;
     len--;
+    free(entry);
     printf("ptr:%p\n",ptr);
     return ptr; 
 }
