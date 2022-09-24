@@ -12,13 +12,33 @@
 
 typedef struct _node {
     void *ptr;
-    SLIST_ENTRY(_node) field;
+    struct _node *next;
 } node_t;
 
-typedef SLIST_HEAD(_head,_node) head_t;
 
-head_t *alloc_hd;
+node_t *list;
 int len;
+
+static inline void insert_list(void *ptr)
+{
+    node_t *node = malloc(sizeof(node_t));
+    node->ptr = ptr;
+    node->next = list;
+    len++;
+}
+
+static inline void *delete_list(int pos)
+{
+    node_t **curr = &list;
+    node_t *node;
+    int i;
+    for(i=0;i<pos;i++)
+        curr = &((*curr)->next);
+    node = *curr;
+    *curr = node->next;
+    len--;
+    return node->ptr;
+}
 
 static inline void *op_alloc(int sz)
 {
@@ -26,7 +46,6 @@ static inline void *op_alloc(int sz)
     node_t *elm = malloc(sizeof(node_t));
     elm->ptr = ptr;
     len++;
-    SLIST_INSERT_HEAD(alloc_hd,elm,field);
     return ptr;
 }
 
@@ -39,22 +58,10 @@ static inline void *op_free()
 
     int pos = rand()%len;
     printf("pos: %d len: %d\n",pos,len);
-    node_t *elm = NULL;
-    
-    SLIST_FOREACH(elm,alloc_hd,field){
-        if(pos==0)
-            break;
-        else
-            pos--;
-    }
-
-    assert(elm != NULL);
-    printf("hd: %p elm:%p \n",alloc_hd,elm);
-    SLIST_REMOVE(alloc_hd,elm,_node,field);
-    len--;
-    pmm->free(elm->ptr);
+    void *ptr = delete_list(pos);
+    pmm->free(ptr);
     printf("end of op_free\n");
-    return elm->ptr;
+    return ptr;
 }
 
 static void single_thread_stress_test(int ntimes)
@@ -77,8 +84,7 @@ static void single_thread_stress_test(int ntimes)
 int main(const char *args)
 {   
     int ntimes = atoi(args);
-    alloc_hd = malloc(sizeof(head_t));
-    SLIST_INIT(alloc_hd);
+    list = malloc(sizeof(node_t));
     srand(time(NULL));
     os->init();
     single_thread_stress_test(ntimes);
