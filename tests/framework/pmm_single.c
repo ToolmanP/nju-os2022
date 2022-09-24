@@ -38,6 +38,7 @@ static inline void *op_free()
         return (void *)-1;
 
     int pos = rand()%len;
+    printf("pos: %d len: %d\n",pos,len);
     node_t *elm = NULL;
     SLIST_FOREACH(elm,alloc_hd,field){
         if(pos==0)
