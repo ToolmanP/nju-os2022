@@ -32,7 +32,7 @@ static inline void *delete_list(int pos)
 {
     node_t *entry = list;
     node_t **curr = &list;
-    assert(len>pos);
+    assert(len>=pos);
     for(int i=0;i<pos;i++)
         curr = &((*curr)->next);
     assert(*curr != NULL);
