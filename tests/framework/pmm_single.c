@@ -32,6 +32,8 @@ static inline void *delete_list(int pos)
 {
     node_t **curr = &list;
     void *ptr;
+    assert(*curr != NULL);
+    
     for(int i=0;i<pos;i++){
         curr = &((*curr)->next);
     }
