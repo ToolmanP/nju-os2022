@@ -60,6 +60,7 @@ static inline void *op_free()
     printf("pos: %d len: %d\n",pos,len);
     void *ptr = delete_list(pos);
     pmm->free(ptr);
+    printf("ptr:%p\n",ptr);
     printf("end of op_free\n");
     return ptr;
 }
