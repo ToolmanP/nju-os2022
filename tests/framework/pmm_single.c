@@ -44,7 +44,7 @@ static inline void *op_free()
     return elm->ptr;
 }
 
-static __always_inline void single_thread_stress_test(int ntimes)
+static void single_thread_stress_test(int ntimes)
 {   
     void *ptr;
     while(ntimes--){
