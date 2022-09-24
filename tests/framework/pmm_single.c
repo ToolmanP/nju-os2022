@@ -78,6 +78,7 @@ static void single_thread_stress_test(int ntimes)
                 continue;
             else
                 printf("F,%p\n",ptr);
+            printf("return from op_free\n");
         } 
     }
     
