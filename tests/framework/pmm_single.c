@@ -63,7 +63,7 @@ static inline void *op_free()
     int pos = rand()%len;
     void *ptr = delete_list(pos);
     printf("return from delete_list\n");
-    pmm->free(ptr);
+    // pmm->free(ptr);
     return ptr;
 }
 
