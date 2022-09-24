@@ -46,9 +46,7 @@ static inline void *delete_list(int pos)
 static inline void *op_alloc(int sz)
 {
     void *ptr = pmm->alloc(sz);
-    node_t *elm = malloc(sizeof(node_t));
-    elm->ptr = ptr;
-    len++;
+    insert_list(ptr);
     return ptr;
 }
 
