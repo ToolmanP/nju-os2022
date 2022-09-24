@@ -34,7 +34,6 @@ static inline void *delete_list(int pos)
     node_t **curr = &list;
     for(int i=0;i<=pos;i++)
         curr = &((*curr)->next);
-    assert(0);
     assert(*curr != NULL);
     entry = *curr;
     assert(entry != NULL);
