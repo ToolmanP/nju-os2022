@@ -40,8 +40,14 @@ static inline void *delete_list(int pos)
         entry = *curr;
         curr = &(entry->next);
     }
+    printf("2\n");
+    printf("%p %p\n",curr,entry);
     *curr = entry->next;
+    printf("3\n");
     ptr = entry->ptr;
+    printf("4\n");
+    free(entry);
+    printf("5\n");
     len--;
     return ptr;
 }
