@@ -31,6 +31,7 @@ static inline void insert_list(void *ptr)
 static inline void *delete_list(int pos)
 {
     node_t **curr = &list;
+    printf("%p\n",list->ptr);
     void *ptr;
     int i;
     printf("delete_list\n");
