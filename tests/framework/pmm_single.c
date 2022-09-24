@@ -68,6 +68,8 @@ static void single_thread_stress_test(int ntimes)
 int main(const char *args)
 {   
     int ntimes = atoi(args);
+    hd = malloc(sizeof(node_t));
+    li = malloc(sizeof(list_t));
     NODE_INIT(hd,NULL);
     LIST_INIT(li,hd);
 
