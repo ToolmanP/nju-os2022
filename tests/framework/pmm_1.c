@@ -13,7 +13,8 @@ static inline void test()
   printf("%d\n",_pmm_nbits_round(4096));
   void *ptr1 = pmm->alloc(1);
   void *ptr2 = pmm->alloc(1);
-  printf("%p %p\n",ptr1,ptr2);
+  void *ptr3 = pmm->alloc(2);
+  printf("%p %p %p\n",ptr1,ptr2,ptr3);
 }
 
 int main() {
