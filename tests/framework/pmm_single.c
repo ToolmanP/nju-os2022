@@ -39,7 +39,7 @@ static inline void *delete_list(int pos)
     assert(entry != NULL);
     void *ptr = entry->ptr;
     *curr = entry->next;
-
+    printf("%p\n",ptr);
     return ptr; 
 }
 
