@@ -39,7 +39,8 @@ static inline void *delete_list(int pos)
     assert(entry != NULL);
     void *ptr = entry->ptr;
     *curr = entry->next;
-    printf("%p\n",ptr);
+    printf("ptr:%p\n",ptr);
+    len--;
     return ptr; 
 }
 
@@ -74,7 +75,6 @@ static void single_thread_stress_test(int ntimes)
             else
                 printf("F,%p\n",ptr);
         } 
-        printf("end\n");
     }
     
 }
