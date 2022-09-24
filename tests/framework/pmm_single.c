@@ -42,9 +42,11 @@ static inline void *delete_list(int pos)
     }
     printf("2\n");
     *curr = entry->next;
-    ptr = entry->ptr;
-    free(entry);
     printf("3\n");
+    ptr = entry->ptr;
+    printf("4\n");
+    free(entry);
+    printf("5\n");
     return ptr;
 }
 
