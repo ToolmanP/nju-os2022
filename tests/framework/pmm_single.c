@@ -21,9 +21,9 @@ static __always_inline inline void single_thread_stress_test(int ntimes)
     
 }
 
-int main(int argc, char *argv[])
+int main(const char *args)
 {   
-    printf("%d\n",argc);
+    printf("%s\n",args);
     // assert(argc == 2);
     // int ntimes = atoi(argv[1]);
     // srand(time(NULL));
