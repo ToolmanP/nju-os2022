@@ -10,10 +10,25 @@
 #include <common.h>
 #include <klib.h>
 
-#define PGSIZE
+#define __always_inline inline __attribute__((always_inline))
+typedef struct _list {
+    void *ptr;
+    SLIST_ENTRY(_list);
+} list_t;
+
+typedef SLIST_HEAD(_list_head,_list) head_t;
+
+static __always_inline void single_thread_stress_test(int ntimes)
+{
+    
+}
+
 int main(int argc, char *argv[])
 {
     assert(argc == 2);
     int ntimes = atoi(argv[1]);
-    
+    srand(time(NULL));
+    os->init();
+    single_thread_stress_test(ntimes);
+    return 0;
 }
