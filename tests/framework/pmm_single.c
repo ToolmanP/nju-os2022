@@ -40,6 +40,7 @@ static inline void *op_free()
     int pos = rand()%len;
     printf("pos: %d len: %d\n",pos,len);
     node_t *elm = NULL;
+    
     SLIST_FOREACH(elm,alloc_hd,field){
         if(pos==0)
             break;
@@ -48,6 +49,7 @@ static inline void *op_free()
     }
 
     assert(elm != NULL);
+    printf("hd: %p elm:%p \n",alloc_hd,elm);
     SLIST_REMOVE(alloc_hd,elm,_node,field);
     len--;
     pmm->free(elm->ptr);
