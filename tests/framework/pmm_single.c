@@ -41,6 +41,7 @@ static inline void *delete_list(int pos)
         curr = &(entry->next);
     }
     printf("2\n");
+    assert(entry != NULL);
     assert(curr != NULL);
     *curr = entry->next;
     printf("3\n");
@@ -48,6 +49,7 @@ static inline void *delete_list(int pos)
     printf("4\n");
     free(entry);
     printf("5\n");
+    len--;
     return ptr;
 }
 
