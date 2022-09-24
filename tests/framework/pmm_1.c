@@ -10,7 +10,7 @@ int _pmm_nbits_round(size_t size);
 
 static inline void test()
 {
-  printf("%d\n",_pmm_nbits_round(10));
+  printf("%d\n",_pmm_nbits_round(1));
 }
 
 int main() {
