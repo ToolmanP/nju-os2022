@@ -46,6 +46,8 @@ static inline void *op_free()
         else
             pos--;
     }
+
+    assert(elm != NULL);
     SLIST_REMOVE(alloc_hd,elm,_node,field);
     len--;
     pmm->free(elm->ptr);
