@@ -46,7 +46,6 @@ static inline void *delete_list(int pos)
     printf("3\n");
     ptr = entry->ptr;
     printf("4\n");
-    free(entry);
     printf("5\n");
     len--;
     return ptr;
