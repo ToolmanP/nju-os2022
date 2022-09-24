@@ -87,6 +87,8 @@ int main(const char *args)
 {   
     int ntimes = atoi(args);
     list = malloc(sizeof(node_t));
+    list -> ptr = NULL;
+    list -> next = NULL;
     srand(time(NULL));
     os->init();
     single_thread_stress_test(ntimes);
