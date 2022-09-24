@@ -10,7 +10,7 @@ int _pmm_nbits_round(size_t size);
 
 static inline void test()
 {
-  printf("%d\n",_pmm_nbits_round(4096));
+  // printf("%d\n",_pmm_nbits_round(4096));
   void *ptr1 = pmm->alloc(1);
   void *ptr2 = pmm->alloc(1);
   void *ptr3 = pmm->alloc(2);
