@@ -25,8 +25,6 @@ static inline void *delete_list(int pos)
 {
     node_t *node;
     LIST_DELETE_POS(li,pos,node);
-    if(node==NULL)
-        return (void *)-1;
     return node->elm;
 }
 
@@ -39,12 +37,11 @@ static inline void *op_alloc(int sz)
 
 static inline void *op_free()
 {   
+    if(li->len == 0)
+        return (void *)-1;
     int pos = rand()%(li->len);
     void *ptr = delete_list(pos);
-    if(ptr == (void *)-1)
-        goto finished;
     pmm->free(ptr);
-finished:
     return ptr;
 }
 

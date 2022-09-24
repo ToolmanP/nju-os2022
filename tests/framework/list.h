@@ -57,10 +57,6 @@ do{\
 #define LIST_DELETE_POS(li,pos,node)\
 do{\
     node_t **curr = &li->head;\
-    if(pos>=li->len){\
-        node = NULL;\
-        break;\
-    }\
     for(int i=0;i<=pos;i++){\
         curr = &((*curr)->next);\
     }\
