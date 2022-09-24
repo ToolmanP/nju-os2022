@@ -82,6 +82,7 @@ static void single_thread_stress_test(int ntimes)
             else
                 printf("F,%p\n",ptr);
         } 
+        printf("end\n");
     }
     
 }
