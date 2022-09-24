@@ -32,18 +32,20 @@ static inline void *op_alloc(int sz)
 
 static inline void *op_free()
 {   
-    printf("Op free\n");
+
     if(len == 0)
         return (void *)-1;
 
     int pos = rand()%len;
     node_t *elm = NULL;
-
     SLIST_FOREACH(elm,alloc_hd,field){
-        if(pos--==0)
+        if(pos==0)
             break;
+        else
+            pos--;
     }
     SLIST_REMOVE(alloc_hd,elm,_node,field);
+    len--;
     pmm->free(elm->ptr);
     return elm->ptr;
 }
