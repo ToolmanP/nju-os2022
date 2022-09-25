@@ -89,7 +89,6 @@ int main(const char *args)
     LIST_INIT(li,hd);      
     srand(time(NULL));
     os->init();
-    for(int mode=0;mode<3;mode++)
-        single_thread_stress_test(ntimes,mode);
+    single_thread_stress_test(ntimes,0);
     return 0;
 }
