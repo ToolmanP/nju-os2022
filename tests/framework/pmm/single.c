@@ -64,9 +64,11 @@ static inline int generate_size(int mode)
 static void single_thread_stress_test(int ntimes,int mode)
 {   
     void *ptr;
+    int sz;
     while(ntimes--){
         if((rand() % 2) == 0){
-            printf("A,%p\n",op_alloc(generate_size(mode)));
+            sz = generate_size(mode);
+            printf("A,%p,%d\n",op_alloc(sz));
         }else{
             ptr = op_free();
             if(ptr == (void *)-1)
