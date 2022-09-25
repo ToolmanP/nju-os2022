@@ -9,7 +9,7 @@
 
 static inline void smoke_test()
 {
-  for(int i=0;i<PGSIZE>>7;i++)
+  for(int i=0;i<(PGSIZE>>7)+1;i++)
     pmm->alloc(1<<7);
 }
 
