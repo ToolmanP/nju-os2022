@@ -1,7 +1,8 @@
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 
 #include <time.h>
 #include <common.h>
@@ -46,12 +47,26 @@ static inline void *op_free()
     return ptr;
 }
 
-static void single_thread_stress_test(int ntimes)
+static inline int generate_size(int mode)
+{
+    switch(mode){
+        case 0:
+            return rand()%(PGSIZE-1)+1; // Small shard memory allocation
+        case 1:
+            return rand()%(MALLOCMAX-PGSIZE)+PGSIZE; // Large shard memory allocation
+        case 2:
+            return rand()%(MALLOCMAX-1)+1; // Mixed intensive testing
+        default:
+            assert(0);
+    }
+    return -1;
+}
+static void single_thread_stress_test(int ntimes,int mode)
 {   
     void *ptr;
     while(ntimes--){
         if((rand() % 2) == 0){
-            printf("A,%p\n",op_alloc((rand() % 256)+1));
+            printf("A,%p\n",op_alloc(generate_size(mode)));
         }else{
             ptr = op_free();
             if(ptr == (void *)-1)
@@ -69,10 +84,10 @@ int main(const char *args)
     hd = malloc(sizeof(node_t));
     li = malloc(sizeof(list_t));
     NODE_INIT(hd,NULL);
-    LIST_INIT(li,hd);
-
+    LIST_INIT(li,hd);      
     srand(time(NULL));
     os->init();
-    single_thread_stress_test(ntimes);
+    for(int mode=0;mode<3;mode++)
+        single_thread_stress_test(ntimes,mode);
     return 0;
 }
