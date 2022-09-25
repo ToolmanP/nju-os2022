@@ -51,7 +51,7 @@ static inline int generate_size(int mode)
 {
     switch(mode){
         case 0:
-            return rand()%(256)+1; // Small shard memory allocation
+            return rand()%(16)+1; // Small shard memory allocation
         case 1:
             return rand()%(MALLOCMAX-PGSIZE)+PGSIZE; // Large shard memory allocation
         case 2:
