@@ -51,7 +51,7 @@ static inline int generate_size(int mode)
 {
     switch(mode){
         case 0:
-            return rand()%(PGSIZE-1)+1; // Small shard memory allocation
+            return rand()%(2048)+1; // Small shard memory allocation
         case 1:
             return rand()%(MALLOCMAX-PGSIZE)+PGSIZE; // Large shard memory allocation
         case 2:
@@ -69,7 +69,7 @@ static void single_thread_stress_test(int ntimes,int mode)
     while(ntimes--){
         if((rand() % 2) == 0){
             sz = generate_size(mode);
-            printf("A,%p\n",op_alloc(2048));
+            printf("A,%p\n",op_alloc(sz));
         }else{
             ptr = op_free();
             if(ptr == (void *)-1)
