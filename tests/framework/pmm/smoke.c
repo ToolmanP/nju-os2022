@@ -10,7 +10,6 @@
 static inline void smoke_test()
 {
   void *ptr1 = pmm->alloc(2);
-  pmm->free(ptr1);
   void *ptr2 = pmm->alloc(2);
   printf("%p %p\n",ptr1,ptr2);
 }
