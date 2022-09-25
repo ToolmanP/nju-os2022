@@ -1,4 +1,0 @@
-/*
-    This test is for testing freeing 
-
-*/
