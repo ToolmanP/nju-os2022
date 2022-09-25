@@ -69,7 +69,7 @@ static void single_thread_stress_test(int ntimes,int mode)
     while(ntimes--){
         if((rand() % 2) == 0){
             sz = generate_size(mode);
-            printf("A,%p\n",op_alloc(128));
+            printf("A,%p\n",op_alloc(256));
         }else{
             ptr = op_free();
             if(ptr == (void *)-1)
