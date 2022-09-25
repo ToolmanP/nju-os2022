@@ -95,6 +95,7 @@ int main(const char *arg)
     sem_init(&alloc,0,0);
     sem_init(&free,0,SLOTS);
     sem_init(&lock,0,1);
+    srand(time(NULL));
     atexit(exit_function);
 
     parg_t parg = {
