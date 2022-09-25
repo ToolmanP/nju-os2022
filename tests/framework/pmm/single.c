@@ -90,6 +90,6 @@ int main(const char *args)
     LIST_INIT(li,hd);      
     srand(time(NULL));
     os->init();
-    single_thread_stress_test(ntimes,0);
+    single_thread_stress_test(ntimes,1);
     return 0;
 }
