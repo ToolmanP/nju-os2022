@@ -9,9 +9,8 @@
 
 static inline void smoke_test()
 {
-  void *ptr1 = pmm->alloc(245);
-  void *ptr2 = pmm->alloc(113);
-  printf("%p %p \n",ptr1,ptr2);
+  for(int i=0;i<PGSIZE>>7;i++)
+    pmm->alloc(1<<7);
 }
 
 int main() {
