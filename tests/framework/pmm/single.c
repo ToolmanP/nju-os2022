@@ -51,7 +51,7 @@ static inline int generate_size(int mode)
 {
     switch(mode){
         case 0:
-            return rand()%(256)+1; // Small shard memory allocation
+            return rand()%(PGSIZE-1)+1; // Small shard memory allocation
         case 1:
             return rand()%(MALLOCMAX-PGSIZE)+PGSIZE; // Large shard memory allocation
         case 2:
@@ -90,6 +90,6 @@ int main(const char *args)
     LIST_INIT(li,hd);      
     srand(time(NULL));
     os->init();
-    single_thread_stress_test(ntimes,0);
+    single_thread_stress_test(ntimes,2);
     return 0;
 }
