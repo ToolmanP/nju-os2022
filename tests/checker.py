@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# This script is a simple validation to various kernel modules
+
 import argparse,sys
 
 def pmm_check(args):
