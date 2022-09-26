@@ -108,14 +108,21 @@ static inline void *kalloc_slow(int nbits,int cpuid)
 { 
   assert(nbits >= PGBITS);
   UNUSED(cpuid);
-  void *ret;
+
+  void *ptr;
   uintptr_t page_ptr;
+
   _pmm_spin_lock(&_pmm_global_lock);
   page_ptr = pmm_global_alloc(0,1,BITMAPLEVELS,nbits-PGBITS);
   _pmm_spin_unlock(&_pmm_global_lock);
-  ret = _sbrk+(page_ptr<<PGBITS);
-  assert(IN_RANGE(ret,heap));
-  return ret;
+
+  ptr = _sbrk+(page_ptr<<PGBITS);
+  assert(IN_RANGE(ptr,heap));
+
+#if PAGE_TRACE
+  plog("+",ptr,cpuid);
+#endif
+  return ptr;
 }
 
 static inline void kfree_slow(void *ptr,int cpuid)
@@ -126,6 +133,9 @@ static inline void kfree_slow(void *ptr,int cpuid)
   _pmm_spin_lock(&_pmm_global_lock);
   pmm_global_free(page_ptr,1,BITMAPLEVELS);
   _pmm_spin_unlock(&_pmm_global_lock);
+#if PAGE_TRACE
+  plog("-",ptr,cpuid);
+#endif
 }
 
 static inline void *pgalloc()
@@ -138,18 +148,12 @@ static inline void pmm_shard_allocate_page(shard_t *shard,int nbits)
   
   shard->pg = pgalloc();
   shard->unallocated = PGSIZE>>nbits;
-  #if SLAB_TRACE
-    printf("+[G][nbits:%d]: %p [%s]\n",nbits,shard->pg,__func__);
-  #endif
 }
 
 static inline void pmm_shard_allocate_slab(shard_t *shard,int nbits)
 {
   shard->slab_ptr = pgalloc();
   shard->slots = PGSIZE/sizeof(slab_t);
-  #if SLAB_TRACE
-    printf("+[G][nbits:%d]: %p [%s]\n",nbits,shard->slab_ptr,__func__);
-  #endif
 }
 
 static inline void pmm_shard_insert_free_slab(arena_t *arena, shard_t *shard, slab_t *slab)
@@ -158,7 +162,7 @@ static inline void pmm_shard_insert_free_slab(arena_t *arena, shard_t *shard, sl
   slab->next = shard->free;
   shard->free = slab;
 #if SLAB_TRACE
-  printf(">[S][cpu:%d][nbits:%d]: %p [%s]\n",arena->_cpuid,slab->nbits,slab->ptr,__func__);
+  slog(">",arena,slab);
 #endif
   _pmm_spin_unlock(&shard->_sh_lock);
 }
@@ -170,7 +174,7 @@ static inline slab_t *pmm_shard_fetch_free_slab(arena_t *arena,shard_t *shard)
   slab_t *slab = shard->free;
   shard->free = shard->free->next;
 #if SLAB_TRACE
-  printf("<[S][cpu:%d][nbits:%d]: %p [%s]\n",arena->_cpuid,slab->nbits,slab->ptr,__func__);
+  slog("<",arena,slab);
 #endif
   return slab;
 }
@@ -185,12 +189,17 @@ static inline slab_t *pmm_shard_fetch_local_free_slab(arena_t *arena,shard_t *sh
   return slab;
 }
 
-static inline slab_t *pmm_shard_fetch_external_free_slab(arena_t *arena,shard_t *shard)
+static inline slab_t *pmm_shard_fetch_external_free_slab(arena_t* tl_arena,arena_t *ex_arena, shard_t *ex_shard)
 {
   slab_t *slab = NULL;
-  if(_pmm_try_spin_lock(&(shard->_sh_lock)) == 0)
-    slab = pmm_shard_fetch_free_slab(arena,shard);
-  _pmm_spin_unlock(&shard->_sh_lock);
+  if(_pmm_try_spin_lock(&(ex_shard->_sh_lock)) == 0){
+    slab = pmm_shard_fetch_free_slab(ex_arena,ex_shard);
+    _pmm_spin_unlock(&ex_shard->_sh_lock);
+  }
+#if SLAB_TRACE
+  if(slab)
+    slog_ex("<",tl_arena,ex_arena,slab);
+#endif
   return slab;
 }
 
@@ -214,7 +223,7 @@ static inline slab_t *pmm_shard_allocate_new_slab(arena_t *arena,shard_t *shard,
   shard->slots--;
 
 #if SLAB_TRACE
-  printf("+[S][cpuid:%d][nbits:%d][unallocated:%d]: %p [%s]\n",arena->_cpuid,slab->nbits,shard->unallocated,slab->ptr,__func__);
+  slog("+",arena,slab);
 #endif
   return slab;
 }
@@ -244,8 +253,9 @@ static inline slab_t *pmm_arena_fetch_free_slab(int nbits,int cpuid)
       continue;
     ex_arena = &arenas[i];
     ex_shard = &ex_arena->shards[nbits];
-    if((slab = pmm_shard_fetch_external_free_slab(ex_arena,ex_shard)) != NULL)
+    if((slab = pmm_shard_fetch_external_free_slab(tl_arena,ex_arena,ex_shard)) != NULL){
       goto ret;
+    }
   }
 
   slab = pmm_shard_allocate_new_slab(tl_arena,tl_shard,nbits);
@@ -273,7 +283,7 @@ static inline slab_t *pmm_arena_search_allocated_slab(arena_t *arena, void *ptr)
   if(slab != NULL){
 
   #if SLAB_TRACE
-    printf("-[cpu:%d][nbits:%d]: %p [%s]\n",arena->_cpuid,slab->nbits,slab->ptr,__func__);
+    slog("-",arena,slab);
   #endif
 
     assert(curr != NULL);
@@ -362,11 +372,33 @@ static void kfree(void *ptr)
     kfree_slow(ptr,cpuid);
 }
 
+#ifdef MULTI
+void *kalloc_thread(size_t size,int cpuid)
+{
+  if(size>MALLOCMAX || size == 0)
+    return (void *)MALLOC_FAILURE;
+
+  int nbits = _pmm_nbits_round(size);
+  
+  if(nbits < PGBITS)
+    return kalloc_fast(nbits,cpuid);
+  else
+    return kalloc_slow(nbits,cpuid); 
+}
+
+void kfree_thread(void *ptr,int cpuid)
+{
+  assert(IN_RANGE(ptr,heap));
+  if((kfree_fast(ptr,cpuid)) != 0)
+    kfree_slow(ptr,cpuid);
+}
+
+#endif
 static void pmm_init()
 {
   uintptr_t pmsize = ((uintptr_t)heap.end - (uintptr_t)heap.start);
   _sbrk = heap.start;
-  
+  _pmm_global_lock = 0;
   _pmm_bmap_init(BITMAPMAX);
   for(int i=0;i<MAXCPUS;i++)
     arena_init(&arenas[i],i);

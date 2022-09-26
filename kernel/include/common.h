@@ -1,6 +1,7 @@
 
 #ifndef __COMMON_H
 #define __COMMON_H
+
 #include <kernel.h>
 #include <klib.h>
 #include <klib-macros.h>
@@ -19,9 +20,8 @@
 #define raddr(addr,cur) (addr | (1ul << (cur-1)))
 #define UNUSED(x) (void)x
 
-#define PAGE_TRACE 1
+#define PAGE_TRACE 0
 #define SLAB_TRACE 0
-
 #define noinline __attribute__((noinline))
 
 
@@ -46,5 +46,14 @@ typedef struct _arena{
 } arena_t;
 
 #define SLOT_MAX (PGSIZE/(sizeof(slab_t)))
+
+#define slog(op,arena,slab)\
+    printf(op"[S][cpu#%d][nbits:%d]: %p [%s:%d]\n",arena->_cpuid,slab->nbits,slab->ptr,__func__,__LINE__)
+
+#define slog_ex(op,tl,ex,slab)\
+    printf(op"[S][cpu#%d->#%d][nbits:%d]: %p [%s:%d]\n",ex->_cpuid,tl->_cpuid,slab->nbits,slab->ptr,__func__,__LINE__)
+
+#define plog(op,ptr,cpuid)\
+    printf(op"[G][cpu#%d]: %p [%s:%d]\n",cpuid,ptr,__func__,__LINE__)
 
 #endif
