@@ -1,5 +1,5 @@
 MODULE         := pmm
-SUBMODULE      := single
+SUBMODULE      := multi
 NAME           := $(MODULE)_$(SUBMODULE)
 SRCS           := framework/$(MODULE)/$(SUBMODULE).c $(shell find -L ./src/ -name "*.c")
 INC_PATH       := include/ framework/include/
@@ -11,4 +11,4 @@ endif
 
 include $(AM_HOME)/Makefile
 include ../Makefile.lab
-image: git
+image:
