@@ -1,13 +1,19 @@
 #include <common.h>
 
 struct task {
-  // TODO
+  const char *name;
+  void (*entry)(void *arg);
+  void *arg;
+  
 };
 
 struct spinlock {
-  // TODO
+  const char *name;
+  int locked;
 };
 
 struct semaphore {
-  // TODO
+  const char *name;
+  int value;
+  struct spinlock lock;
 };
