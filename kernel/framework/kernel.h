@@ -26,7 +26,6 @@ MODULE(pmm) {
   void  (*free)(void *ptr);
 };
 
-<<<<<<< HEAD
 typedef struct task task_t;
 typedef struct spinlock spinlock_t;
 typedef struct semaphore sem_t;
@@ -47,6 +46,4 @@ MODULE(dev) {
   void (*init)();
   device_t *(*lookup)(const char *name);
 };
-=======
 #endif
->>>>>>> L1
