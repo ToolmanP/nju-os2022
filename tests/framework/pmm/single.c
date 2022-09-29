@@ -8,23 +8,25 @@
 #include <common.h>
 #include <klib.h>
 #include <malloc.h>
-#include <list.h>
 
-LIST_TYPE_DEFINE(void *);
-LIST_DEFINE(li);
-HEAD_DEFINE(hd);
+#include <common/list.h>
+#include <modules/pmm.h>
+
+NODE_TYPEDEF(void *,addr);
+LIST_TYPEDEF(addr);
+LIST_T(addr) *li;
 
 static inline void insert_list(void *ptr)
 {
-    node_t *node = malloc(sizeof(node_t));
+    NODE_T(addr) *node = malloc(sizeof(NODE_T(addr)));
     NODE_INIT(node,ptr);
     LIST_INSERT(li,node);
 }
 
 static inline void *delete_list(int pos)
 {
-    node_t *node;
-    LIST_DELETE_POS(li,pos,node);
+    NODE_T(addr) *node;
+    LIST_DELETE_BY_POS(addr,li,pos,node);
     void *ret = node->elm;
     free(node);
     return ret;
@@ -39,9 +41,9 @@ static inline void *op_alloc(int sz)
 
 static inline void *op_free()
 {   
-    if(li->len == 0)
+    if(li->length == 0)
         return (void *)-1;
-    int pos = rand()%(li->len);
+    int pos = rand()%(li->length);
     void *ptr = delete_list(pos);
     pmm->free(ptr);
     return ptr;
@@ -84,10 +86,8 @@ static void single_thread_stress_test(int ntimes,int mode)
 int main(const char *args)
 {   
     int ntimes = atoi(args);
-    hd = malloc(sizeof(node_t));
-    li = malloc(sizeof(list_t));
-    NODE_INIT(hd,NULL);
-    LIST_INIT(li,hd);      
+    li = malloc(sizeof(NODE_T(addr)));
+    LIST_INIT(li);      
     srand(time(NULL));
     os->init();
     single_thread_stress_test(ntimes,2);
