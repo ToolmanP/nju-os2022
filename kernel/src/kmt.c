@@ -1,182 +1,188 @@
-#include <os.h>
+
 #include <modules/kmt.h>
+#include <os.h>
+
 
 static cpu_t *cpus;
-static NODE_T(thread) *ctnodes[MAXCPUS];
+static threadpool_t *kthreadpool; // kernel thread-pools
+// static processpool_t *processpool; // process pool
 
 #define ccpu (cpus[cpu_current()])
-#define ctnode (ctnodes[cpu_current()])
 
-static int kmt_create(task_t *task, const char *name, void (*entry)(void *arg), void *arg);
-static void kmt_teardown(task_t *task);
-static void kmt_spin_lock(spinlock_t *lk);
-static void kmt_spin_unlock(spinlock_t *lk);
-static void kmt_sem_init(sem_t *sem, const char *name, int value);
-static void kmt_sem_wait(sem_t *sem);
-static void kmt_sem_post(sem_t *sem);
-static void kmt_init();
-
-__always_inline void kmt_context_save(Event ev, Context *ctx)
-{   
-    UNUSED(ev);
-    thread_t *thread;
-    NODE_GET_ELM(ctnode,thread);
-    thread->task->context = ctx;    
-}
-
-__always_inline Context *kmt_context_switch(Event ev,Context *ctx)
-{   
-    UNUSED(ev);
-    NODE_T(thread) *node;
-    thread_t *thread;
-    Context *next = NULL;
-    kmt_spin_lock(&ccpu.lock);
-    LIST_FOREACH(thread,ccpu.kthreads,node){
-        NODE_GET_ELM(node,thread);
-        if(node != ctnode && thread->status == RUNNING){
-            next = thread->task->context;
-            ctnode = node;
-        }
-    }
-    panic_on(next == NULL, "Returning null context");
-    kmt_spin_unlock(&ccpu.lock);
-    return next;
-}
-
-static __always_inline thread_t * thread_alloc(task_t *task,const char *name)
+static __always_inline void kmt_try_enable_interrupt()
 {
-    thread_t *thread = pmm->alloc(sizeof(thread_t));
-    task->stack = (Area){NULL,NULL};
-    task->context = NULL;
-    task->name = name;
-    task->context = NULL;
-    task->entry = NULL;
-    thread->task = task;
-    thread->status = RUNNING;
-    return thread;
+    if(ccpu.locked == 0 && ccpu.acquired == 0 && ccpu.interrupted == 0)
+        iset(true);
+    
 }
 
-static __always_inline void thread_set_entry(thread_t *thread,void (*entry)(void *arg), void *arg)
+static __always_inline void kmt_conditional_disable_interrupt()
 {
-    task_t *task = thread->task;
-    void *rsp = pmm->alloc(STACKSIZE);
-    Area kstack = {.start = rsp, .end = rsp+STACKSIZE};
-    task->arg = arg;
-    task->entry = entry;
-    task->stack = kstack;
-    task->context = kcontext(kstack,entry,arg);
-}
-
-static __always_inline void thread_free(thread_t *thread)
-{
-    pmm->free(thread->task->stack.start);
-    pmm->free(thread->task);
-    pmm->free(thread);
-}
-
-static int kmt_create(task_t *task, const char *name, void (*entry)(void *arg), void *arg)
-{   
-    kmt_spin_lock(&ccpu.lock);
-    NODE_T(thread) *thread_node = pmm->alloc(sizeof(NODE_T(thread)));
-    thread_t *thread = thread_alloc(task,name);
-    thread_set_entry(thread,entry,arg);
-    NODE_INIT(thread_node,thread);
-    LIST_INSERT(ccpu.kthreads,thread_node);
-    kmt_spin_unlock(&ccpu.lock);
-    return 0;
-}
-
-static void kmt_teardown(task_t *task)
-{   
-    NODE_T(thread) *node;
-    thread_t *thread;
-
-    kmt_spin_lock(&ccpu.lock);
-    NODE_GET_ELM(ctnode,thread);
-    int is_current = (thread->task == task) ? 1 : 0;
-    LIST_DELETE_BY_ELM_FIELD(thread,ccpu.kthreads,task,task,node);
-    NODE_GET_ELM(node,thread);
-    if(thread->status == WAITING){
-        thread->status = DEAD;
-    }else{
-        thread_free(thread);
-        pmm->free(node);
-    }
-    kmt_spin_unlock(&ccpu.lock);
-
-    if(is_current) // current thread's task is the task we need to tear down we need to perform context switch
-        yield();
-}
+    if(ccpu.locked == 1 || ccpu.acquired > 0 || ccpu.interrupted == 1)
+        iset(false);
+} 
 
 static void kmt_spin_init(spinlock_t *lk, const char *name)
 {   
-    lk->name = name;
     lk->locked = 0;
+    lk->acquirer = NULL;
+    lk->name = name;
+}
+
+static inline void kmt_generic_spin_lock(spinlock_t *lk)
+{
+    while(__os_acquire_spin_lock(&lk->locked)==1){
+        yield();
+    }
+    lk->acquirer = ccpu.tcurrent;
+}
+
+static inline void kmt_generic_spin_unlock(spinlock_t *lk)
+{
+    lk->acquirer = NULL;
+    __os_spin_unlock(&lk->locked);
+}
+
+static inline void kmt_ccpu_lock()
+{
+    kmt_generic_spin_lock(&ccpu.lock);
+    ccpu.locked = 1;
+}
+
+static inline void kmt_ccpu_unlock()
+{   
+    ccpu.locked = 0;
+    kmt_generic_spin_unlock(&ccpu.lock);
 }
 
 static void kmt_spin_lock(spinlock_t *lk)
 {   
-    while(atomic_xchg(&lk->locked,1) == 1){
-        yield();
-    }
+    kmt_ccpu_lock();
+    ccpu.acquired++;
+    kmt_conditional_disable_interrupt();
+    kmt_ccpu_unlock();
+    kmt_generic_spin_lock(lk);
 }
 
 static void kmt_spin_unlock(spinlock_t *lk)
 {   
-    atomic_xchg(&lk->locked,0);
+    kmt_generic_spin_unlock(lk);
+    kmt_ccpu_lock(lk);
+    ccpu.acquired--;
+    kmt_ccpu_unlock(lk);
+    kmt_try_enable_interrupt();
+}
+
+static __always_inline thread_t * kmt_thread_alloc(task_t *task)
+{   
+    thread_t *thread = pmm->alloc(sizeof(thread_t));
+
+    thread->task = task;
+    thread->status = NOT_READY;
+
+    return thread;
+}
+
+static __always_inline void kmt_thread_set_entry(thread_t *thread,const char *name, void (*entry)(void *arg), void *arg)
+{
+    task_t *task = thread->task;
+    void *rsp = pmm->alloc(STACKSIZE);
+    Area kstack = {.start = rsp, .end = rsp + STACKSIZE};
+
+    task->arg = arg;
+    task->stack = kstack;
+    task->entry = entry;
+    task->context = kcontext(kstack,entry,arg);
+
+    thread->status = READY;
+}
+
+static __always_inline void kmt_thread_free(thread_t *thread)
+{
+    pmm->free(thread->task->stack.start);
+    pmm->free(thread);
+}
+
+static __always_inline void kmt_threadpool_insert(threadpool_t *tpool,thread_t *thread)
+{
+    NODE_T(thread) *nthread = pmm->alloc(sizeof(NODE_T(thread)));
+    NODE_INIT(nthread,thread);
+    kmt_spin_lock(&tpool->lock);
+    LIST_INSERT(tpool->pool,nthread);
+    kmt_spin_unlock(&tpool->lock);
+}
+
+static __always_inline void kmt_threadpool_remove(threadpool_t *tpool,task_t *task)
+{
+    NODE_T(thread) *nthread = NULL;
+    thread_t *thread = NULL;
+
+    kmt_spin_lock(&tpool->lock);
+    LIST_DELETE_BY_ELM_FIELD(thread,tpool->pool,task,task,nthread);
+    kmt_spin_unlock(&tpool->lock);
+    panic_on(nthread == NULL, "task not found!");
+    NODE_GET_ELM(nthread,thread);
+    panic_on(thread == NULL, "Find null thread?");
+    if(thread->status == BLOCKED){
+        thread->status = DEAD;
+    }else{
+        kmt_thread_free(thread);
+        pmm->free(nthread);
+    }
+}
+
+static int kmt_create(task_t *task, const char *name, void (*entry)(void *arg), void *arg)
+{   
+    thread_t *thread = kmt_thread_alloc(task);
+    kmt_thread_set_entry(thread,name,entry,arg);
+    kmt_threadpool_insert(kthreadpool,thread);
+    return 0;
+}
+
+static void kmt_teardown(task_t *task)
+{
+    kmt_threadpool_remove(kthreadpool,task);
 }
 
 static void kmt_sem_init(sem_t *sem, const char *name, int value)
 {   
-    sem->name = name;
+    sem->wthreads = pmm->alloc(sizeof(LIST_T(thread)));
+    LIST_INIT(sem->wthreads);
     sem->value = value;
-    sem->wthreads = pmm->alloc(sizeof(QUEUE_T(thread)));
-    QUEUE_INIT(sem->wthreads);
+    sem->name = name;
     kmt_spin_init(&sem->lock,NULL);
 }
 
 static void kmt_sem_wait(sem_t *sem)
 {   
-    thread_t *thread;
-    volatile int status;
     kmt_spin_lock(&sem->lock);
     if(sem->value == 0){
-        status = WAITING;
-    }else{
-        sem->value--;
-        status = RUNNING;
-    }
-    kmt_spin_unlock(&sem->lock);
-    
-    kmt_spin_lock(&ccpu.lock);
-    NODE_GET_ELM(ctnode,thread);
-    thread->status = status;
-    if(status == WAITING){
-        kmt_spin_lock(&sem->lock);
-        QUEUE_PUSH(sem->wthreads,ctnode);
+        ccpu.tcurrent->status = BLOCKED;
+        QUEUE_PUSH(sem->wthreads,ccpu.ncurrent);
         kmt_spin_unlock(&sem->lock);
-        kmt_spin_unlock(&ccpu.lock);
         yield();
     }else{
-        kmt_spin_unlock(&ccpu.lock);
+        sem->value--;
+        ccpu.tcurrent->status = RUNNING;
+        kmt_spin_unlock(&sem->lock);
     }
 }
 
 static void kmt_sem_post(sem_t *sem)
 {
-    NODE_T(thread) *node;
-    thread_t *thread;
+    NODE_T (thread) *nthread = NULL;
+    thread_t *thread = NULL;
     kmt_spin_lock(&sem->lock);
     if(sem->value == 0){
         while(sem->wthreads->length>0){
-            QUEUE_POP(sem->wthreads,node);
-            NODE_GET_ELM(node,thread);
-            if(thread->status == DEAD){
-                thread_free(thread);
-                pmm->free(node);
-            }else{
-                thread->status == RUNNING;
+            QUEUE_POP(sem->wthreads,nthread);
+            NODE_GET_ELM(nthread,thread);
+            if(thread->status == BLOCKED){
+                thread->status = RUNNING;
                 break;
+            }else{
+                kmt_thread_free(thread);
+                pmm->free(nthread);
             }
         }
     }
@@ -184,21 +190,54 @@ static void kmt_sem_post(sem_t *sem)
     kmt_spin_unlock(&sem->lock);
 }
 
-static void kmt_init()
-{   
-    task_t *task;
-    thread_t *thread;
+void kmt_context_save(Event ev, Context *ctx)
+{  
+   kmt_ccpu_lock();
+   ccpu.tcurrent->task->context = ctx;
+   kmt_ccpu_unlock();
+}
 
-    cpus = pmm->alloc(MAXCPUS * sizeof(cpu_t));  
-    for(int i=0;i<MAXCPUS;i++){
-        cpus[i].kthreads = pmm->alloc(sizeof(LIST_T(thread)));
-        LIST_INIT(cpus[i].kthreads);
-        ctnodes[i] = pmm->alloc(sizeof(NODE_T(thread)));
-        task = pmm->alloc(sizeof(task));
-        thread = thread_alloc(task,"Startup");
-        NODE_INIT(ctnodes[i],thread);
-        LIST_INSERT(cpus[i].kthreads,ctnodes[i]);
+Context *kmt_context_schedule(Event ev,Context *ctx)
+{   
+    NODE_T(thread) *nthread = NULL;
+    thread_t *thread = NULL;
+    Context *next = NULL;
+    kmt_spin_lock(&kthreadpool->lock);
+    ccpu.interrupted = 0;
+    LIST_FOREACH(kthreadpool->pool,nthread){
+        NODE_GET_ELM(nthread,thread);
+        if(thread->status == WAITING || thread->status == READY){
+            ccpu.tcurrent->status = WAITING;
+            ccpu.tcurrent = thread;
+            ccpu.ncurrent = nthread;
+            next = thread->task->context;
+        }
     }
+    ccpu.interrupted = 0;
+    kmt_spin_unlock(&kthreadpool->lock);
+    return next;
+}
+
+static void kmt_cpu_init(int cpuid)
+{   
+    NODE_T(thread) *nthread = pmm->alloc(sizeof(NODE_T(thread)));
+    thread_t *thread = kmt_thread_alloc(NULL);
+    NODE_INIT(nthread,thread);
+
+    cpus[cpuid].acquired = 0;
+    cpus[cpuid].cpuid = cpuid;
+    cpus[cpuid].interrupted = 0;
+    cpus[cpuid].tcurrent = thread;
+    cpus[cpuid].ncurrent = nthread;
+    kmt_spin_init(&cpus[cpuid].lock, NULL);
+}
+
+static void kmt_init()
+{
+    cpus = pmm->alloc(MAXCPUS * sizeof(cpu_t));
+    for(int i=0;i<MAXCPUS;i++)
+        kmt_cpu_init(i);
+
 }
 
 MODULE_DEF(kmt) = {

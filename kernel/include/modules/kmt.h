@@ -1,7 +1,8 @@
 #ifndef __KMT_H
 
-#include <os.h>
+#include <common.h>
+#include <common/lock.h>
 
-__always_inline void kmt_context_save(Event ev, Context *ctx);
-__always_inline Context *kmt_context_switch(Event ev,Context *ctx);
+void kmt_context_save(Event ev, Context *ctx);
+Context *kmt_context_schedule(Event ev,Context *ctx);
 #endif 
