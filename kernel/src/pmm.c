@@ -1,51 +1,26 @@
 #include <common.h>
+#include <common/lock.h>
 #include <modules/pmm.h>
-
-#define lch(x) (x<<1ul)
-#define rch(x) ((x<<1ul)|1ul)
-#define laddr(addr,cur) (addr)
-#define raddr(addr,cur) (addr | (1ul << (cur-1)))
-#define SLOT_MAX (PGSIZE/(sizeof(slab_t)))
-
-typedef struct _slab{
-    void *ptr;
-    struct _slab *next;
-    int nbits;
-} slab_t;
-
-typedef struct _shard{
-    void *pg,*slab_ptr;
-    size_t unallocated,slots;
-    struct _slab *free;
-    int _sh_lock;
-} shard_t;
-
-typedef struct _arena{
-    shard_t shards[PGBITS];
-    struct _slab *allocated;
-    int _al_lock;
-    int _cpuid;
-} arena_t;
 
 static void *_sbrk = NULL;
 static char *_pmm_bmap = NULL;
 static arena_t arenas[MAXCPUS];
 static int _pmm_global_lock = 0;
 
-static inline int _pmm_try_spin_lock(int *lock)
+static __always_inline int _pmm_try_spin_lock(int *lock)
 {
-  int lock_state = atomic_xchg(lock,1);
+  int lock_state = __os_acquire_spin_lock(lock);
   return lock_state;
 }
 
-static inline void _pmm_spin_lock(int *lock)
+static __always_inline void _pmm_spin_lock(int *lock)
 {
-  while(atomic_xchg(lock,1) == 1);
+  while(__os_acquire_spin_lock(lock)==1);
 }
 
 static inline void _pmm_spin_unlock(int *lock)
 {
-  atomic_xchg(lock,0);
+  __os_spin_unlock(lock);
 }
 
 static inline void _pmm_bmap_init(size_t size)
