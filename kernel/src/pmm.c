@@ -1,31 +1,51 @@
 #include <common.h>
+#include <modules/pmm.h>
+
+#define lch(x) (x<<1ul)
+#define rch(x) ((x<<1ul)|1ul)
+#define laddr(addr,cur) (addr)
+#define raddr(addr,cur) (addr | (1ul << (cur-1)))
+#define SLOT_MAX (PGSIZE/(sizeof(slab_t)))
+
+typedef struct _slab{
+    void *ptr;
+    struct _slab *next;
+    int nbits;
+} slab_t;
+
+typedef struct _shard{
+    void *pg,*slab_ptr;
+    size_t unallocated,slots;
+    struct _slab *free;
+    int _sh_lock;
+} shard_t;
+
+typedef struct _arena{
+    shard_t shards[PGBITS];
+    struct _slab *allocated;
+    int _al_lock;
+    int _cpuid;
+} arena_t;
 
 static void *_sbrk = NULL;
 static char *_pmm_bmap = NULL;
 static arena_t arenas[MAXCPUS];
 static int _pmm_global_lock = 0;
 
-static inline int xchg(int *addr, int val)
-{
-  int result;
-  asm volatile("lock xchg %0,%1":"+m"(*addr),"=a"(result):"1"(val));
-  return result;
-}
-
 static inline int _pmm_try_spin_lock(int *lock)
 {
-  int lock_state = xchg(lock,1);
+  int lock_state = atomic_xchg(lock,1);
   return lock_state;
 }
 
 static inline void _pmm_spin_lock(int *lock)
 {
-  while(xchg(lock,1) == 1);
+  while(atomic_xchg(lock,1) == 1);
 }
 
 static inline void _pmm_spin_unlock(int *lock)
 {
-  xchg(lock,0);
+  atomic_xchg(lock,0);
 }
 
 static inline void _pmm_bmap_init(size_t size)
@@ -205,6 +225,8 @@ static inline slab_t *pmm_shard_fetch_external_free_slab(arena_t* tl_arena,arena
 
 static inline slab_t *pmm_shard_allocate_new_slab(arena_t *arena,shard_t *shard, int nbits)
 { 
+  _pmm_spin_lock(&shard->_sh_lock);
+
   if(shard->unallocated <= 0)
     pmm_shard_allocate_page(shard,nbits);
   
@@ -222,6 +244,7 @@ static inline slab_t *pmm_shard_allocate_new_slab(arena_t *arena,shard_t *shard,
   shard->unallocated--;
   shard->slots--;
 
+  _pmm_spin_unlock(&shard->_sh_lock);
 #if SLAB_TRACE
   slog("+",arena,slab);
 #endif
@@ -348,7 +371,7 @@ static inline int kfree_fast(void *ptr,int cpuid)
 }
 
 
-static void *kalloc(size_t size)
+static inline void *kalloc(size_t size)
 {
   if(size>MALLOCMAX || size == 0)
     return (void *)MALLOC_FAILURE;
@@ -363,7 +386,7 @@ static void *kalloc(size_t size)
   return NULL;
 }
 
-static void kfree(void *ptr)
+static inline void kfree(void *ptr)
 {
   assert(IN_RANGE(ptr,heap));
   int cpuid = cpu_current();
@@ -394,6 +417,26 @@ void kfree_thread(void *ptr,int cpuid)
 }
 
 #endif
+
+static void *kalloc_safe(size_t size)
+{
+  bool i = ienabled();
+  iset(false);
+  void *ret = kalloc(size);
+  if(i)
+    iset(true);
+  return ret;
+}
+
+static void kfree_safe(void *ptr)
+{
+  bool i = ienabled();
+  iset(false);
+  kfree(ptr);
+  if(i)
+    iset(true);
+}
+
 static void pmm_init()
 {
   uintptr_t pmsize = ((uintptr_t)heap.end - (uintptr_t)heap.start);
@@ -408,6 +451,6 @@ static void pmm_init()
 
 MODULE_DEF(pmm) = {
   .init  = pmm_init,
-  .alloc = kalloc,
-  .free  = kfree,
+  .alloc = kalloc_safe,
+  .free  = kfree_safe,
 };
