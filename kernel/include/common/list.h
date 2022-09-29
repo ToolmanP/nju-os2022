@@ -91,6 +91,6 @@ do{\
     (li)->length--;\
 }while(0)
 
-#define LIST_FOREACH(type,li,node)\
+#define LIST_FOREACH(li,node)\
 for(node = li->lnode; node ; node=node->next)
 #endif
