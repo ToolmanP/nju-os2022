@@ -1,3 +1,6 @@
+#ifndef __OS_H
+#define __OS_H
+
 #include <common.h>
 #include <common/queue.h>
 
@@ -5,16 +8,13 @@
 #define IRQ_MIN 0
 #define IRQ_MAX INT32_MAX
 
-enum{
+enum thread_state{
   READY = 0,
   RUNNING,
   WAITING,
+  BLOCKED,
+  NOT_READY,
   DEAD,
-};
-
-struct spinlock {
-  const char *name;
-  int locked;
 };
 
 struct task {
@@ -27,8 +27,14 @@ struct task {
 
 typedef struct thread{
   task_t *task;
-  int status;
+  enum thread_state status;
 } thread_t;
+
+struct spinlock {
+  const char *name;
+  int locked;
+  thread_t *acquirer; // generic acquirer
+};
 
 NODE_TYPEDEF(task_t *,task);
 NODE_TYPEDEF(thread_t *,thread);
@@ -39,7 +45,6 @@ QUEUE_TYPEDEF(thread);
 
 typedef struct process{
   LIST_T(thread) *prthreads;
-  LIST_T(thread) *pwthreads;
   int pid;
   int status;
 } process_t;
@@ -50,14 +55,30 @@ LIST_TYPEDEF(process);
 QUEUE_TYPEDEF(process);
 
 typedef struct cpu{
-  thread_list_t *kthreads;
-  spinlock_t lock;
+  thread_t *tcurrent; // current 
+  thread_node_t  *ncurrent;
+  spinlock_t  lock; // cpu-local lock
   int cpuid;
+  int acquired; // acquired locks excluding cpu-local lock
+  int locked; // is current cpu locked ?
+  int interrupted; // is in an interrupt handler?
 } cpu_t;
 
 struct semaphore {
   const char *name;
-  thread_queue_t *wthreads;
+  QUEUE_T(thread) *wthreads;
   spinlock_t lock;
   int value;
 };
+
+typedef struct _threadpool{
+  LIST_T(thread) *pool;
+  spinlock_t lock;
+} threadpool_t;
+
+typedef struct _processpool{
+  LIST_T(process) *pool;
+  spinlock_t lock;
+}processpool_t;
+
+#endif

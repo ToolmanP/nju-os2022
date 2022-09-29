@@ -45,14 +45,18 @@ static void irq_sort(irq_t *irqs,int l,int r) // Quicksort why not ?
 
 static int context_check(Context *ctx)
 {
+  extern char end;
+  int status = 0;
 #if __ARCH__ == x86_64-qemu
-  return 0;
-#elif
+  Area rip_area = {(void *)0x1000b0,&end};
+  Area rsp_area = {NULL,heap.end};
 
+  status |= !(IN_RANGE((void *)ctx->rip,rip_area));
+  status |= !(IN_RANGE((void *)ctx->rsp,rsp_area));
+  return status;
 #else
-
-#endif
   return -1;
+#endif
 }
 
 static Context *os_context_save_irq_handler(Event ev, Context *ctx)
@@ -61,9 +65,9 @@ static Context *os_context_save_irq_handler(Event ev, Context *ctx)
   return ctx;
 }
 
-static Context *os_context_switch_irq_handler(Event ev, Context *ctx)
+static Context *os_context_schedule_irq_handler(Event ev, Context *ctx)
 {
-  return kmt_context_switch(ev,ctx);
+  return kmt_context_schedule(ev,ctx);
 }
 
 static Context *os_syscall_irq_handler(Event ev,Context *ctx)
@@ -126,7 +130,7 @@ static void os_init()
   os_irq(100,EVENT_SYSCALL,os_syscall_irq_handler);
   os_irq(400,EVENT_PAGEFAULT,os_pagefault_irq_handler);
   os_irq(500,EVENT_ERROR,os_error_irq_handler); 
-  os_irq(IRQ_MAX,EVENT_NULL,os_context_switch_irq_handler);
+  os_irq(IRQ_MAX,EVENT_NULL,os_context_schedule_irq_handler);
 }
 
 static void os_run()
