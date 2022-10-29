@@ -7,7 +7,7 @@
 
 #include <sys/wait.h>
 
-#define MAXLEN 4096
+#define MAXLEN 8192
 #define MAXPATH 256
 #define MAXSYM 128
 
@@ -68,6 +68,7 @@ static inline char *wrap_expression(const char *sym,const char *def)
   sprintf(buf,"int %s(){return (%s);}",sym,def);
   return buf;
 }
+
 
 static inline int exec_expression(const char *line,int *success)
 {
@@ -150,4 +151,5 @@ int main(int argc, char *argv[]) {
     parse_line(line);
     // printf("Got %zu chars.\n", strlen(line)); // ??
   }
+  return EXIT_FAILURE; // never reach here.
 }
